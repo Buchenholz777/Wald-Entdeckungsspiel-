@@ -45,6 +45,32 @@ const NON_TEXT: [string, string, string][] = [
   ['forest', 'sage', 'Schalter an auf Salbei'],
 ];
 
+/** Wald Escape und Moduswahl (src/styles/escape.css): die tatsächlich verwendeten Farbpaare für Text. */
+const ESCAPE_TEXT: [string, string, string][] = [
+  ['forest', '#eef6e6', 'Name und Zustand der gewählten Modusfläche'],
+  ['#3f4f44', '#eef6e6', 'Erklärung der gewählten Modusfläche'],
+  ['#3f4f44', '#fffdf7', 'Erklärung der Modusfläche'],
+  ['ok', '#eef6e6', '„Gewählt“-Zustand'],
+  ['#55400f', '#fffdf4', 'Zeitbeschriftung („Suchzeit läuft“)'],
+  ['#7a4a12', '#fff7e4', 'Zeitbeschriftung bei etwa einer Minute'],
+  ['forest', '#fffdf4', 'Zeitanzeige MM:SS'],
+  ['muted', '#fffdf7', 'Hinweistext auf den Escape-Flächen'],
+  ['#3a2a12', 'sand', 'Altershinweis'],
+  ['#5a2414', '#f6dccf', 'Hinweis bei falscher Reihenfolge'],
+  ['#5a3d08', '#fff3c4', 'Abzeichen „rechtzeitig“'],
+  ['forest', '#e8f3dd', 'Ausgefüllter Schlüsselplatz'],
+];
+
+describe('Kontrast Wald Escape (Text ≥ 4,5:1)', () => {
+  it.each(ESCAPE_TEXT)('Text %s auf %s (%s)', (fg, bg) => {
+    expect(ratio(fg, bg)).toBeGreaterThanOrEqual(4.5);
+  });
+  it('die Escape-Flächen verwenden genau diese Farben', () => {
+    const esc = readFileSync(new URL('../src/styles/escape.css', import.meta.url), 'utf8');
+    for (const hex of ['#eef6e6', '#fffdf4', '#55400f', '#7a4a12', '#fff7e4', '#5a2414', '#5a3d08', '#fff3c4']) expect(esc.toLowerCase(), hex).toContain(hex);
+  });
+});
+
 describe('Kontrast (Farbwerte aus app.css)', () => {
   it('liest die Farbwerte', () => {
     expect(Object.keys(tokens).length).toBeGreaterThan(10);

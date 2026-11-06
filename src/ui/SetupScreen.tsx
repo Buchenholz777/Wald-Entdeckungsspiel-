@@ -6,6 +6,10 @@ import { AGE_GROUPS, FOREST, SEASONS, type AgeGroup } from '../domain/types';
 import { Illustration } from '../illustrations/Illustration';
 import { SeasonGlyph } from '../illustrations/scenes';
 import { Wordmark } from './Brand';
+import { EscapeDuration, EscapeIntro, EscapeResume, EscapeRules, escapeParams } from './escape/EscapeSetup';
+import { ModeSwitch } from './ModeSwitch';
+import { isLive } from '../domain/escape';
+import type { Escape } from './useEscape';
 import { GiftCard } from './GiftCard';
 import type { Game } from './useGame';
 import { IconArrow, IconChevron, IconHelp } from './icons';
@@ -15,6 +19,7 @@ import { offlineLabel, type PwaInfo } from '../pwa/status';
 
 interface Props {
   game: Game;
+  esc: Escape;
   go: (r: Route) => void;
   pwa: PwaInfo;
   /** Hinweis zu einem alten Link (höchstens einmal) */
@@ -24,8 +29,12 @@ interface Props {
 const contextOptions = CONTEXT_BY_ENV[FOREST];
 const HERO_FINDS = ['acorn', 'cone', 'maple-leaf'];
 
-export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
+export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
   const { draft, patchDraft, round, archive } = game;
+  const mode = game.settings.mode;
+  const escParams = escapeParams(game);
+  const liveEsc = isLive(esc.mission) ? esc.mission : null;
+  const [confirmEsc, setConfirmEsc] = useState(false);
   const [errors, setErrors] = useState<{ age?: string; empty?: string }>({});
   const [seasonOpen, setSeasonOpen] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
@@ -67,6 +76,37 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
     else if (res.reason === 'empty') setErrors({ empty: 'Dafür haben wir gerade keine passende Station. Ändert die Jahreszeit oder die Angaben unter „Mission anpassen“.' });
   };
 
+  /* Wald Escape: Die Uhr beginnt erst hier, beim bewussten Start. Eine laufende Mission wird nur nach einer klaren Entscheidung ersetzt. */
+  const beginEscape = () => {
+    if (!draft.age) {
+      setErrors({ age: 'Bitte wählt zuerst das Alter des jüngsten Kindes.' });
+      ageRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      ageRef.current?.querySelector<HTMLInputElement>('input')?.focus({ preventScroll: true });
+      return;
+    }
+    if (!escParams) return;
+    if (liveEsc) {
+      setConfirmEsc(true);
+      return;
+    }
+    doStartEscape();
+  };
+  const doStartEscape = () => {
+    if (!escParams) return;
+    const res = esc.start(escParams);
+    if (res.ok) {
+      setErrors({});
+      go('/escape');
+    } else {
+      setErrors({ empty: 'Für diese Auswahl gibt es gerade zu wenige passende Waldschätze für eine Zeitmission. Ändert die Jahreszeit oder die Angaben unter „Mission anpassen“, oder spielt die entspannte Waldschatzsuche.' });
+    }
+  };
+  const continueEscape = () => {
+    esc.act.enter();
+    go('/escape');
+  };
+  const switchMode = (next: typeof mode) => game.saveSettings({ mode: next });
+
   const toggleContext = (tag: (typeof contextOptions)[number]) => {
     const has = draft.context.includes(tag);
     patchDraft({ context: has ? draft.context.filter((c) => c !== tag) : [...draft.context, tag] });
@@ -95,6 +135,25 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
           Zapfen, Waldfrüchte und kleine Spuren: Geht gemeinsam auf Entdeckermission und erfahrt, welche Geheimnisse im Wald stecken. Wählt das Alter eures Kindes – und los geht’s!
         </p>
       </header>
+
+      <ModeSwitch mode={mode} onChange={switchMode} />
+
+      {mode === 'escape' && <EscapeIntro age={draft.age} />}
+      {mode === 'detective' && (
+        <section className="mode-intro" aria-label="Walddetektive">
+          <h2 className="mode-intro-title">Walddetektive: Genauer hinschauen</h2>
+          <p>Dieser Modus ist in dieser Fassung von Wald-Spiel noch nicht dabei. Er kommt später dazu.</p>
+          <p className="muted">Bis dahin könnt ihr entspannt Waldschätze suchen oder gemeinsam den Waldtresor knacken. Eure gespeicherten Missionen bleiben dabei unberührt.</p>
+          <div className="mode-intro-actions">
+            <button type="button" className="btn btn-primary btn-compact" onClick={() => switchMode('treasure')}>
+              Zu den Waldschätzen
+            </button>
+            <button type="button" className="btn btn-secondary btn-compact" onClick={() => switchMode('escape')}>
+              Zu Wald Escape
+            </button>
+          </div>
+        </section>
+      )}
 
       {pwa.updateWaiting && (
         <div className="notice" role="status">
@@ -134,7 +193,17 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
         </div>
       )}
 
-      {running && (
+      {mode === 'escape' && esc.mission && <EscapeResume esc={esc} onContinue={continueEscape} onView={continueEscape} />}
+      {esc.notice && mode === 'escape' && (
+        <div className="notice" role="status">
+          <p>{esc.notice}</p>
+          <button type="button" className="btn btn-quiet" onClick={esc.act.dismissNotice}>
+            Verstanden
+          </button>
+        </div>
+      )}
+
+      {mode === 'treasure' && running && (
         <section className="resume" aria-label="Laufende Waldmission">
           <div>
             <p className="resume-title">{running.mission?.title ?? 'Eure Waldmission läuft noch'}</p>
@@ -150,7 +219,7 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
           </button>
         </section>
       )}
-      {finishedRound && (
+      {mode === 'treasure' && finishedRound && (
         <section className="resume" aria-label="Letzte Waldmission">
           <div>
             <p className="resume-title">Eure letzte Waldmission ist abgeschlossen</p>
@@ -162,6 +231,7 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
         </section>
       )}
 
+      {mode !== 'detective' && (
       <fieldset className="group" ref={ageRef} aria-describedby={errors.age ? 'err-age' : undefined}>
         <legend className="group-title">Wie alt ist das jüngste Kind?</legend>
         <div className="age-grid">
@@ -181,7 +251,9 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
           </p>
         )}
       </fieldset>
+      )}
 
+      {mode !== 'detective' && (
       <section className="season-row" aria-label="Jahreszeit">
         <div className="season-line">
           <SeasonGlyph season={game.effectiveSeason} />
@@ -215,7 +287,11 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
           </fieldset>
         )}
       </section>
+      )}
 
+      {mode === 'escape' && <EscapeDuration value={game.settings.escapeMinutes} onChange={(minutes) => game.saveSettings({ escapeMinutes: minutes })} />}
+
+      {mode !== 'detective' && (
       <section className="adjust">
         <button type="button" className="adjust-toggle" aria-expanded={adjustOpen} aria-controls="adjust-panel" onClick={() => setAdjustOpen((o) => !o)}>
           Mission anpassen
@@ -223,6 +299,7 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
         </button>
         {adjustOpen && (
           <div id="adjust-panel" className="adjust-panel">
+            {mode === 'treasure' && (
             <fieldset className="subgroup">
               <legend className="sub-title">Wie viele Stationen?</legend>
               <div className="count-row">
@@ -235,8 +312,9 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
               </div>
               <p className="muted">Standard: {draft.age ? DEFAULT_TASK_COUNT[draft.age] : 'je nach Alter 3 oder 5'}.</p>
             </fieldset>
+            )}
 
-            {draft.age && draft.age !== '2-3' && (
+            {mode === 'treasure' && draft.age && draft.age !== '2-3' && (
               <label className="switch-row">
                 <input type="checkbox" checked={draft.boost} onChange={(e) => patchDraft({ boost: e.target.checked })} />
                 <span className="switch" aria-hidden="true" />
@@ -262,6 +340,16 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
           </div>
         )}
       </section>
+      )}
+
+      {mode === 'escape' && <EscapeRules params={escParams} />}
+      {mode === 'escape' && draft.age === '2-3' && (
+        <div className="mode-intro-actions">
+          <button type="button" className="btn btn-primary" onClick={() => switchMode('treasure')}>
+            Zur Waldschatzsuche wechseln
+          </button>
+        </div>
+      )}
 
       {errors.empty && (
         <p className="field-error" role="alert">
@@ -293,11 +381,52 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
         </button>
       </footer>
 
-      <div className="action-bar">
-        <button type="button" className="btn btn-primary btn-big" onClick={begin}>
-          {running ? 'Neue Waldmission' : 'Waldmission starten'}
-        </button>
-      </div>
+      {mode === 'treasure' && (
+        <div className="action-bar">
+          <button type="button" className="btn btn-primary btn-big" onClick={begin}>
+            {running ? 'Neue Waldmission' : 'Waldmission starten'}
+          </button>
+        </div>
+      )}
+      {mode === 'escape' && draft.age !== '2-3' && (
+        <div className="action-bar">
+          {liveEsc ? (
+            <>
+              <button type="button" className="btn btn-primary btn-big" onClick={continueEscape}>
+                Wald Escape fortsetzen
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={beginEscape}>
+                Neue Wald-Escape-Mission
+              </button>
+            </>
+          ) : (
+            <button type="button" className="btn btn-primary btn-big" onClick={beginEscape}>
+              Sanduhr starten
+            </button>
+          )}
+        </div>
+      )}
+
+      <Modal open={confirmEsc} onClose={() => setConfirmEsc(false)} title="Neue Wald-Escape-Mission?" onHome={undefined}>
+        <p>
+          Eure Wald-Escape-Mission läuft noch ({liveEsc?.keys.length ?? 0} von 3 Schlüsseln). Mit einer neuen Mission wird sie ersetzt. Waldschätze suchen bleibt unberührt.
+        </p>
+        <div className="modal-actions">
+          <button type="button" className="btn btn-primary" onClick={() => setConfirmEsc(false)}>
+            Behalten
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              setConfirmEsc(false);
+              doStartEscape();
+            }}
+          >
+            Neue Mission, Sanduhr starten
+          </button>
+        </div>
+      </Modal>
 
       <Modal open={confirmNew} onClose={() => setConfirmNew(false)} title="Neue Waldmission starten?" onHome={undefined}>
         <p>

@@ -7,13 +7,17 @@ import { usePwa } from '../pwa/status';
 import { Gallery } from './Gallery';
 import { HelpScreen } from './HelpScreen';
 import { RoundScreen } from './RoundScreen';
+import { EscapeScreen } from './escape/EscapeScreen';
 import { SetupScreen } from './SetupScreen';
+import { isLive } from '../domain/escape';
 import { SummaryScreen } from './SummaryScreen';
+import { useEscape } from './useEscape';
 import { useGame } from './useGame';
 import { useRoute, type Route } from './useRoute';
 
 export function App() {
   const game = useGame();
+  const esc = useEscape(game.settings, game.saveSettings);
   const [route, go] = useRoute();
   const pwa = usePwa();
   const main = useRef<HTMLElement>(null);
@@ -25,15 +29,21 @@ export function App() {
   // Einstiegsroute: laufende Mission fortsetzen, ungültige oder alte Ziele einmalig ins Hauptmenü leiten
   useEffect(() => {
     const raw = window.location.hash.replace(/^#/, '');
-    const known = ['/', '/runde', '/abschluss', '/hilfe', '/intern/bilder'];
+    const known = ['/', '/runde', '/abschluss', '/hilfe', '/intern/bilder', '/escape'];
     if (!raw) {
-      // Kaltstart ohne Adresszusatz: laufende Mission wieder aufnehmen. Ein ausdrücklich gewähltes Hauptmenü (#/) bleibt stehen.
-      if (round && prevRoute.current === null) go(round.finished ? '/abschluss' : '/runde', true);
+      // Kaltstart ohne Adresszusatz: Eine laufende oder abgelaufene Wald-Escape-Suche hat Vorrang (sie ist zeitkritisch),
+      // sonst wird die laufende Waldschätze-Runde wieder aufgenommen. Ein ausdrücklich gewähltes Hauptmenü (#/) bleibt stehen.
+      const em = esc.mission;
+      const escHot = em && isLive(em) && ((em.phase === 'searching' && em.pauses.length === 0) || em.phase === 'timeup');
+      if (escHot && prevRoute.current === null) go('/escape', true);
+      else if (round && prevRoute.current === null) go(round.finished ? '/abschluss' : '/runde', true);
     } else if (!known.includes(raw)) {
       // Alte Adresse (zum Beispiel ein früherer Ort): genau eine Meldung, danach saubere Adresse, keine Weiterleitungskette.
       setLegacyLink(true);
       go('/', true);
     } else if ((raw === '/runde' || raw === '/abschluss') && !round) {
+      go('/', true);
+    } else if (raw === '/escape' && !esc.mission) {
       go('/', true);
     }
     if (new URLSearchParams(window.location.search).has('ort') || new URLSearchParams(window.location.search).has('env')) {
@@ -70,13 +80,23 @@ export function App() {
     prevRoute.current = route;
   }, [route]);
 
+  // Wald Escape: Die Suchzeit steht, sobald das Spiel verlassen wird (Hauptmenü, Hilfe, Zurück), und läuft nur auf der Escape-Seite.
+  const escId = esc.mission?.id;
+  const escAct = esc.act;
+  useEffect(() => {
+    if (!escId) return;
+    if (route === '/escape') escAct.enter();
+    else escAct.leave();
+  }, [route, escId, escAct]);
+
   const hasRound = round !== null;
   let screen;
   if (route === '/hilfe') screen = <HelpScreen game={game} go={go} pwa={pwa} back={() => (window.history.length > 1 ? window.history.back() : go('/'))} />;
   else if (route === '/intern/bilder') screen = <Gallery back={() => go('/')} />;
   else if (route === '/runde' && hasRound) screen = <RoundScreen game={game} go={go} />;
   else if (route === '/abschluss' && hasRound) screen = <SummaryScreen game={game} go={go} />;
-  else screen = <SetupScreen game={game} go={go} pwa={pwa} legacyLink={legacyLink} />;
+  else if (route === '/escape' && esc.mission) screen = <EscapeScreen esc={esc} motionOff={game.settings.motionOff} go={go} />;
+  else screen = <SetupScreen game={game} esc={esc} go={go} pwa={pwa} legacyLink={legacyLink} />;
   const onMenu = screen.type === SetupScreen;
 
   return (

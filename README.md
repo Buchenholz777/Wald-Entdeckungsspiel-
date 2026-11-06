@@ -21,6 +21,10 @@ npm run images:forest  # Hintergrund „Lichter Waldweg“ neu zeichnen und expo
 
 Interne Bildübersicht aller Motive: `…/#/intern/bilder` (nicht verlinkt). Die Windows-Startdatei `Entdeckerzeit starten.bat` baut bei Bedarf und öffnet die Seite. **Nach einer neuen Version** zeigt ein Browser mit gespeicherter alter Fassung sie erst nach dem Schließen aller Tabs oder über den Hinweis „Jetzt aktualisieren“ im Hauptmenü.
 
+## Drei Spielmodi
+
+Direkt unter dem Kopf wählt ihr: **Waldschätze suchen** (das entspannte Suchspiel), **Walddetektive** (in dieser Fassung noch nicht vorhanden, die Kachel sagt das ehrlich) und **Wald Escape – Knackt den Waldtresor!** (gemeinsame Zeitmission: drei von fünf Waldschätzen finden, drei Symbolschlüssel, kleines Symbolrätsel, Waldtresor mit Geschenk). Spielregeln, Zeitlogik, Katalogfilter, Bilder und Prüfstand von Wald Escape: docs/WALDESCAPE.md. Jeder Modus hat seinen eigenen Spielstand; Moduswechsel startet oder löscht nie etwas.
+
 ## Was die App kann
 
 - **Hintergrund:** eigene Illustration „Lichter Waldweg“ (warmes Licht, freundliche Bäume, Lichtung, kleine Waldfunde am Rand), WebP mit JPEG-Rückfall, Quer- und Hochformat, ruhige Rückfallfläche, keine Animation. Am Einstieg gut sichtbar, im Spiel stark zurückgenommen. Auswahlflächen stehen auf fast deckenden hellen Karten.

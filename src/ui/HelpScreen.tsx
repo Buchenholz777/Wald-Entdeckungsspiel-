@@ -36,6 +36,18 @@ export function HelpScreen({ game, pwa, back }: Props) {
       </section>
 
       <section className="help-card">
+        <h2>Die Spielmodi</h2>
+        <dl className="defs">
+          <dt>Waldschätze suchen</dt>
+          <dd>Das entspannte Suchspiel ohne Zeitdruck: eine Waldmission aus ein bis fünf Aufgaben.</dd>
+          <dt>Walddetektive</dt>
+          <dd>Ist in dieser Fassung noch nicht dabei und kommt später.</dd>
+          <dt>Wald Escape: Knackt den Waldtresor!</dt>
+          <dd>Ab 4 Jahren mit erwachsener Begleitung. Ihr bekommt fünf Karten zur Wahl und braucht drei davon, bevor die Sanduhr abgelaufen ist (10, 15 oder 20 Minuten). Jeder Fund schenkt einen Symbolschlüssel. Mit den drei Schlüsseln löst ihr in Ruhe ein kleines Symbolrätsel und öffnet den Waldtresor. Die Zeit läuft nur bei der Suche: Infos lesen, Bilder vergrößern, Karten tauschen und Pausen kosten keine Suchzeit. Wenn das Telefon gesperrt wird, läuft die Sanduhr weiter, tippt bei einer echten Suchpause auf „Pause“. Ist die Zeit abgelaufen, könnt ihr ohne Zeitdruck weitersuchen und den Tresor trotzdem öffnen; es gibt dann dasselbe Geschenk, nur ohne die Aussage „rechtzeitig“.</dd>
+        </dl>
+      </section>
+
+      <section className="help-card">
         <h2>Gemeinsam entdecken</h2>
         <ul>
           <li>Anschauen, zeigen und gemeinsam zählen genügt. Nichts muss eingesammelt werden.</li>

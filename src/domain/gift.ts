@@ -24,7 +24,7 @@ export function foundCounts(round: Round): { done: number; total: number } {
  * Sind alle bekannt, werden die am längsten nicht erhaltenen wieder angeboten. Die Zufallsfunktion kommt vom Missions-Seed,
  * damit dieselbe Mission immer dasselbe Ergebnis hätte (gespeichert wird es trotzdem sofort).
  */
-export function chooseGift(round: Round, received: string[], rng: Rng = seededRng((round.seed ^ 0x9e3779b1) >>> 0)): string {
+export function chooseGift(round: Pick<Round, 'tasks' | 'seed'>, received: string[], rng: Rng = seededRng((round.seed ^ 0x9e3779b1) >>> 0)): string {
   const concepts = new Set(round.tasks.map((t) => t.conceptId));
   const themes = new Set(round.tasks.flatMap((t) => templatesById[t.templateId]?.themes ?? []));
   const unread = gifts.filter((g) => !received.includes(g.id));

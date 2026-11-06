@@ -260,4 +260,12 @@ export interface Settings {
   legacyNoticePending: boolean;
   /** IDs bereits erhaltener Waldgeschenke, in der Reihenfolge des Erhalts (ohne Doppelte) */
   giftsReceived: string[];
+  /** Zuletzt gewählter Spielmodus auf dem Startbildschirm (startet nie etwas von allein) */
+  mode: GameMode;
+  /** Zuletzt gewählte Suchzeit für Wald Escape in Minuten (10, 15 oder 20) */
+  escapeMinutes: number;
 }
+
+/** Die drei Spielmodi: Waldschätze suchen, Walddetektive, Wald Escape. */
+export const GAME_MODES = ['treasure', 'detective', 'escape'] as const;
+export type GameMode = (typeof GAME_MODES)[number];

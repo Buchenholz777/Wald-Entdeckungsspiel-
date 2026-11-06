@@ -79,7 +79,11 @@ export function useGame() {
   const saveSettings = useCallback(
     (patch: Partial<Settings>) => {
       setSettings((s) => {
-        const next = { ...s, ...patch };
+        // Der gespeicherte Stand ist die Grundlage: Ein zweiter, älterer Tab überschreibt so nie Einstellungen
+        // (Spielmodus, Geschenkbuch, Suchzeit) aus dem jüngeren Tab. Nur die geänderten Felder kommen dazu.
+        const stored = persistence.loadSettings();
+        const base = stored.status === 'ok' ? stored.settings : s;
+        const next = { ...base, ...patch };
         persistence.saveSettings(next);
         return next;
       });

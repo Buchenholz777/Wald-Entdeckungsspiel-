@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export type Route = '/' | '/runde' | '/abschluss' | '/hilfe' | '/intern/bilder';
+export type Route = '/' | '/runde' | '/abschluss' | '/hilfe' | '/intern/bilder' | '/escape';
 
-const ROUTES: Route[] = ['/', '/runde', '/abschluss', '/hilfe', '/intern/bilder'];
+const ROUTES: Route[] = ['/', '/runde', '/abschluss', '/hilfe', '/intern/bilder', '/escape'];
 
 function parse(): Route {
   const raw = window.location.hash.replace(/^#/, '') || '/';

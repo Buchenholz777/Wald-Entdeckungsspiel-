@@ -1,6 +1,6 @@
 import { giftsById } from '../catalog/gifts';
 import { templates } from '../catalog/templates';
-import { FOREST, THEMES, type AgeGroup, type ContextTag, type Environment, type Round, type Settings, type Theme } from './types';
+import { FOREST, GAME_MODES, THEMES, type AgeGroup, type ContextTag, type Environment, type GameMode, type Round, type Settings, type Theme } from './types';
 
 /**
  * Versionierte lokale Speicherung. Alles ist abgesichert: blockierter, voller oder beschädigter
@@ -45,6 +45,8 @@ export const DEFAULT_SETTINGS: Settings = {
   lastRoundTheme: null,
   legacyNoticePending: false,
   giftsReceived: [],
+  mode: 'treasure',
+  escapeMinutes: 15,
 };
 
 const templatesById = new Map(templates.map((t) => [t.id, t]));
@@ -70,6 +72,8 @@ export function sanitizeSettings(raw: unknown): Settings {
     for (const id of raw.giftsReceived) if (typeof id === 'string' && giftsById[id] && !seen.includes(id)) seen.push(id);
     out.giftsReceived = seen;
   }
+  if (GAME_MODES.includes(raw.mode as GameMode)) out.mode = raw.mode as GameMode;
+  if (raw.escapeMinutes === 10 || raw.escapeMinutes === 15 || raw.escapeMinutes === 20) out.escapeMinutes = raw.escapeMinutes;
   if (typeof raw.taskCount === 'number' && raw.taskCount >= 1 && raw.taskCount <= 5) out.taskCount = Math.round(raw.taskCount);
   out.boost = raw.boost === true;
   out.motionOff = raw.motionOff === true;

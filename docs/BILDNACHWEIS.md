@@ -34,6 +34,10 @@ Alle 30 Suchmotive (Eichel, Eichelhütchen, Buchecker, Hülle, Nussschale, Zapfe
 
 Die Bilder sind ein **Beispiel** („So kann es aussehen“), keine Bestimmungsabbildung und keine Prüfung des Fundes. Welche Art das Beispiel zeigt und welche Grenzen es gibt, steht je Motiv in `docs/BILDBEWERTUNG.md`. Vergleich mit der früheren Fassung: `docs/vergleich/`.
 
+## Spieloberfläche von Wald Escape
+
+Sanduhr, Waldtresor mit drei Schloss-Zuständen und die acht Symbolschlüssel (Blatt, Zapfen, Eichel, Stern, Pilz, Sonne, Mond, Tropfen) sind eigene, freundlich stilisierte SVG-Zeichnungen aus Code (`src/ui/escape/EscapeArt.tsx`), keine Fremdbilder, keine Dateien zum Nachladen, keine Lizenzpflichten. Sie sind Spieloberfläche, keine naturkundlichen Suchbilder; die Suchkarten zeigen weiter die naturgetreuen Gegenstandsbilder.
+
 ## Geschenkbilder
 
 Die Waldgeschenke verwenden die vorhandenen eigenen Suchmotive als kleines Bild (siehe `docs/WALDGESCHENKE.md`). Es gibt kein Fremdmaterial.
