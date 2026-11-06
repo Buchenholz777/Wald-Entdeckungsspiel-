@@ -23,7 +23,7 @@ Interne Bildübersicht aller Motive: `…/#/intern/bilder` (nicht verlinkt). Die
 
 ## Drei Spielmodi
 
-Direkt unter dem Kopf wählt ihr: **Waldschätze suchen** (das entspannte Suchspiel), **Walddetektive** (in dieser Fassung noch nicht vorhanden, die Kachel sagt das ehrlich) und **Wald Escape – Knackt den Waldtresor!** (gemeinsame Zeitmission: drei Schlüssel, jeder aus 2 oder 3 verschiedenen Entdeckungen, also 6 oder 9 Aufgaben; kleines Symbolrätsel, Waldtresor mit Geschenk). Spielregeln, Zeitlogik, Katalogfilter, Bilder und Prüfstand von Wald Escape: docs/WALDESCAPE.md. Jeder Modus hat seinen eigenen Spielstand; Moduswechsel startet oder löscht nie etwas.
+Direkt unter dem Kopf wählt ihr: **Waldschätze suchen** (das entspannte Suchspiel), **Walddetektive** (noch nicht vorhanden: Die Karte trägt den Hinweis „Bald verfügbar“ und lässt sich nicht wählen) und **Wald Escape – Knackt den Waldtresor!** (gemeinsame Zeitmission: drei Schlüssel, jeder aus 2 oder 3 verschiedenen Entdeckungen, also 6 oder 9 Aufgaben; kleines Symbolrätsel, Waldtresor mit Geschenk). Spielregeln, Zeitlogik, Katalogfilter, Bilder und Prüfstand von Wald Escape: docs/WALDESCAPE.md. Jeder Modus hat seinen eigenen Spielstand; Moduswechsel startet oder löscht nie etwas.
 
 ## Was die App kann
 

@@ -148,7 +148,7 @@ export function EscapeRules({ params }: { params: EscapeParams | null }) {
 }
 
 /** Eine vorhandene Mission: „Wald Escape fortsetzen“ statt einer zweiten daneben. */
-export function EscapeResume({ esc, onContinue, onView }: { esc: Escape; onContinue: () => void; onView: () => void }) {
+export function EscapeResume({ esc, onView }: { esc: Escape; onView: () => void }) {
   const m = esc.mission;
   if (!m) return null;
   const live = isLive(m);
@@ -173,11 +173,7 @@ export function EscapeResume({ esc, onContinue, onView }: { esc: Escape; onConti
           {status}
         </p>
       </div>
-      {live ? (
-        <button type="button" className="btn btn-primary btn-compact" onClick={onContinue}>
-          Wald Escape fortsetzen
-        </button>
-      ) : (
+      {live ? null : (
         <button type="button" className="btn btn-secondary btn-compact" onClick={onView}>
           Ansehen
         </button>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { generateRound, replaceTask } from '../domain/generator';
+import { generateRound, replaceTask, restoreSwap, type SwapUndo } from '../domain/generator';
 import { markCelebrated, rememberGift, withGift } from '../domain/gift';
 import { CONTEXT_BY_ENV, DEFAULT_TASK_COUNT, suggestSeason } from '../domain/meta';
 import { freshSeed, seededRng } from '../domain/rng';
@@ -94,7 +94,10 @@ export function useGame() {
   // Ein Zustandsübergang, der die Mission vollständig macht, vergibt im selben Schritt genau ein Waldgeschenk.
   const receivedRef = useRef(settings.giftsReceived);
   receivedRef.current = settings.giftsReceived;
+  // „Tausch rückgängig“ steht nur bis zur nächsten Spielaktion bereit (nur im Arbeitsspeicher, nie gespeichert).
+  const [swapUndo, setSwapUndo] = useState<SwapUndo | null>(null);
   const setRound = useCallback((fn: (r: Round) => Round) => {
+    setSwapUndo(null);
     setRoundState((r) => (r ? withGift(fn(r), receivedRef.current) : r));
   }, []);
 
@@ -139,6 +142,7 @@ export function useGame() {
       });
       if (!result.round) return { ok: false, reason: 'empty' };
       setRoundState(result.round);
+      setSwapUndo(null);
       saveSettings({
         age: draft.age,
         environment: null,
@@ -174,6 +178,7 @@ export function useGame() {
     });
     if (!result.round) return { ok: false, reason: 'empty' };
     setRoundState(result.round);
+    setSwapUndo(null);
     saveSettings({ lastRoundConcepts: result.round.tasks.map((t) => t.conceptId), lastRoundTheme: result.round.mission?.theme ?? null });
     setAnnounce('Neue Waldmission gestartet.');
     return { ok: true };
@@ -191,6 +196,7 @@ export function useGame() {
       const res = replaceTask(round, uid, seededRng(seed));
       if (!res.round) return false;
       setRoundState(res.round);
+      setSwapUndo(res.undo ?? null);
       const idx = res.round.tasks.findIndex((t) => t.uid !== uid && !round.tasks.some((o) => o.uid === t.uid));
       setAnnounce(`Neue Station: ${res.round.tasks[idx >= 0 ? idx : round.activeIndex].prompt}`);
       return true;
@@ -198,8 +204,18 @@ export function useGame() {
     [round],
   );
 
+  /** „Tausch rückgängig“: bringt die ersetzte Aufgabe samt Zählstand zurück. */
+  const undoSwap = useCallback(() => {
+    if (!swapUndo) return;
+    setRoundState((r) => (r ? restoreSwap(r, swapUndo) : r));
+    setSwapUndo(null);
+    setAnnounce('Tausch rückgängig gemacht. Die frühere Aufgabe ist wieder da.');
+  }, [swapUndo]);
+
   return {
     round,
+    swapUndo,
+    undoSwap,
     setRound,
     settings,
     saveSettings,

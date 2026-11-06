@@ -143,22 +143,6 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
       <ModeSwitch mode={mode} onChange={switchMode} />
 
       {mode === 'escape' && <EscapeIntro age={draft.age} />}
-      {mode === 'detective' && (
-        <section className="mode-intro" aria-label="Walddetektive">
-          <h2 className="mode-intro-title">Walddetektive: Genauer hinschauen</h2>
-          <p>Dieser Modus ist in dieser Fassung von Wald-Spiel noch nicht dabei. Er kommt später dazu.</p>
-          <p className="muted">Bis dahin könnt ihr entspannt Waldschätze suchen oder gemeinsam den Waldtresor knacken. Eure gespeicherten Missionen bleiben dabei unberührt.</p>
-          <div className="mode-intro-actions">
-            <button type="button" className="btn btn-primary btn-compact" onClick={() => switchMode('treasure')}>
-              Zu den Waldschätzen
-            </button>
-            <button type="button" className="btn btn-secondary btn-compact" onClick={() => switchMode('escape')}>
-              Zu Wald Escape
-            </button>
-          </div>
-        </section>
-      )}
-
       {pwa.updateWaiting && (
         <div className="notice" role="status">
           <p>Eine neue Version von Wald-Spiel ist bereit. Eure Waldmission bleibt dabei gespeichert.</p>
@@ -197,7 +181,7 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
         </div>
       )}
 
-      {mode === 'escape' && esc.mission && <EscapeResume esc={esc} onContinue={continueEscape} onView={continueEscape} />}
+      {mode === 'escape' && esc.mission && <EscapeResume esc={esc} onView={continueEscape} />}
       {esc.notice && mode === 'escape' && (
         <div className="notice" role="status">
           <p>{esc.notice}</p>
@@ -218,9 +202,6 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
               {progress(running).skipped > 0 ? `, ${progress(running).skipped} ausgelassen` : ''}
             </p>
           </div>
-          <button type="button" className="btn btn-primary btn-compact" onClick={() => go('/runde')}>
-            Waldmission fortsetzen <IconArrow />
-          </button>
         </section>
       )}
       {mode === 'treasure' && finishedRound && (
@@ -392,22 +373,34 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
 
       {mode === 'treasure' && (
         <div className="action-bar">
-          <button type="button" className="btn btn-primary btn-big" onClick={begin}>
-            {running ? 'Neue Waldmission' : 'Waldmission starten'}
-          </button>
+          {running ? (
+            <div className="action-split">
+              {/* Bei einer laufenden Runde ist „Weiterspielen“ die Hauptaktion und öffnet genau diesen Spielstand; „Neue Runde“ ist die getrennte Nebenaktion (mit Rückfrage). */}
+              <button type="button" className="btn btn-primary btn-big" onClick={() => go('/runde')}>
+                Weiterspielen <IconArrow />
+              </button>
+              <button type="button" className="btn btn-secondary btn-big" onClick={begin}>
+                Neue Runde
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="btn btn-primary btn-big" onClick={begin}>
+              Waldmission starten
+            </button>
+          )}
         </div>
       )}
       {mode === 'escape' && draft.age !== '2-3' && (
         <div className="action-bar">
           {liveEsc ? (
-            <>
+            <div className="action-split">
               <button type="button" className="btn btn-primary btn-big" onClick={continueEscape}>
-                Wald Escape fortsetzen
+                Weiterspielen <IconArrow />
               </button>
-              <button type="button" className="btn btn-secondary" onClick={beginEscape}>
-                Neue Wald-Escape-Mission
+              <button type="button" className="btn btn-secondary btn-big" onClick={beginEscape}>
+                Neue Runde
               </button>
-            </>
+            </div>
           ) : (
             <button type="button" className="btn btn-primary btn-big" onClick={beginEscape}>
               Sanduhr starten

@@ -120,6 +120,38 @@ export function describeClue(c: Clue): string {
 }
 
 /** Kleiner Tipp: sagt, welches Symbol ganz links hingehört, ohne die ganze Reihenfolge zu verraten. */
+/** Ergebnis eines Versuchs, gegen die tatsächliche Lösung dieser Runde ausgewertet. */
+export interface AttemptCheck {
+  /** je Platz: steht dort das richtige Zeichen? */
+  correct: boolean[];
+  allRight: boolean;
+  /** der erste Platz, der nicht stimmt (−1, wenn alles stimmt) */
+  firstWrong: number;
+  /** ein kurzer, konkreter Hinweis, der den nächsten Schritt offenlässt (leer, wenn alles stimmt) */
+  message: string;
+}
+
+const PLACE_WORD = ['ganz links', 'in der Mitte', 'ganz rechts'];
+const ORDINAL = ['erste', 'zweite', 'dritte'];
+
+/**
+ * Wertet die eingelegte Folge gegen die Lösung aus. Der Hinweis nennt, was schon stimmt, und zeigt auf genau eine Stelle; er verrät
+ * die Lösung nicht. Beispiel: Lösung Tropfen – Pilz – Zapfen, eingelegt Zapfen – Pilz – Tropfen → „Der Pilz in der Mitte stimmt schon.
+ * Schau auf das erste Zeichen.“ Passt noch kein Platz, geht es zum ersten Platz und zur Hilfe der Altersstufe (Streifen bei 4–6, Hinweise bei 7–10).
+ */
+export function checkAttempt(solution: SymbolId[], input: (SymbolId | null)[], aid: 'strip' | 'clues'): AttemptCheck {
+  const correct = solution.map((s, i) => input[i] === s);
+  const allRight = correct.every(Boolean);
+  const firstWrong = correct.indexOf(false);
+  if (allRight) return { correct, allRight, firstWrong: -1, message: '' };
+  const firstRight = correct.indexOf(true);
+  const message =
+    firstRight >= 0
+      ? `${cap(nom(solution[firstRight]))} ${PLACE_WORD[firstRight]} stimmt schon. Schau auf das ${ORDINAL[firstWrong]} Zeichen.`
+      : `Noch passt kein Platz. Schau auf den ersten Platz und ${aid === 'strip' ? 'den Vorlagestreifen' : 'die Hinweise'}.`;
+  return { correct, allRight, firstWrong, message };
+}
+
 export function tipText(solution: SymbolId[]): string {
   return `Tipp: Ganz links gehört ${nom(solution[0])} hin.`;
 }

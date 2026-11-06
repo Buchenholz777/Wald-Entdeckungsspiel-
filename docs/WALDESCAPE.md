@@ -7,7 +7,7 @@ Dritter Spielmodus von Wald-Spiel: eine gemeinsame Zeitmission mit freier Aufgab
 | Modus | Stand in dieser Fassung |
 |---|---|
 | Waldschätze suchen | unverändert (eigene Regeln, eigener Spielstand) |
-| Walddetektive | **nicht vorhanden.** Im Repository gab es nie einen Detektivmodus. Die Kachel steht da, erklärt das ehrlich und führt zu den anderen Modi. Sie startet nichts und wird nicht als funktionsfähig ausgegeben. |
+| Walddetektive | **nicht vorhanden.** Im Repository gab es nie einen Detektivmodus. Die Karte steht an zweiter Stelle, trägt den Hinweis „Bald verfügbar“ direkt über dem Titel und ist als deaktiviertes Optionsfeld gekennzeichnet: Antippen und Tastatur wechseln und starten nichts, der gewählte spielbare Modus bleibt aktiv (siehe `docs/UX_BENCHMARK_UMSETZUNG.md`). Eine früher gespeicherte Auswahl „Walddetektive“ öffnet wieder Waldschätze suchen. |
 | Wald Escape | neu, vollständig (diese Seite) |
 
 Die Moduswahl steht direkt unter dem Wald-Spiel-Kopf (Optionsfelder, Pfeiltasten, „Gewählt“ als Text). Ein Moduswechsel startet nie etwas und löscht nie einen Spielstand. Standard beim Erstbesuch ist „Waldschätze suchen“.

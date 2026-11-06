@@ -20,14 +20,22 @@
 .mode-tile input:focus-visible + .mode-face { outline: 3px solid var(--focus); outline-offset: 3px; }
 /* Schmale Telefone: drei lesbare Zeilen (Name und Erklärung vollständig, ohne Silbenbruch mitten im Wort) */
 .mode-face { grid-template-columns: auto 1fr; column-gap: 0.65rem; align-items: center; }
-.mode-top { grid-row: 1; grid-column: 1 / -1; }
-.mode-text { grid-column: 1 / -1; }
+.mode-top { grid-row: 2; grid-column: 1 / -1; }
+.mode-text { grid-row: 3; grid-column: 1 / -1; }
 .mode-state { position: absolute; right: 0.8rem; top: 0.55rem; }
 .mode-name, .mode-text { overflow-wrap: normal; word-break: normal; }
+/* „Bald verfügbar“: Hinweis direkt über dem Titel, dunkle Schrift auf hellem Gelb (Kontrast > 7:1), Karte bleibt sichtbar, aber gestrichelt und nicht wählbar */
+.mode-badge-row { grid-row: 1; grid-column: 1 / -1; display: flex; }
+.mode-badge-row:empty { display: none; }
+.mode-badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; background: #f6e3a8; border: 2px solid #c9a24a; color: #3a2a0a; font-weight: 800; font-size: 0.88rem; line-height: 1.25; }
+.mode-soon input { cursor: not-allowed; }
+.mode-soon .mode-face { border-style: dashed; background: rgba(250, 247, 236, 0.96); }
+.mode-soon .mode-name, .mode-soon .mode-text { color: #3f4f44; }
 @media (min-width: 34rem) {
   .modes-grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
   .mode-face { display: grid; grid-template-columns: 1fr; align-content: start; padding: 0.7rem 0.7rem 0.6rem; min-height: 8.4rem; }
   .mode-top { flex-direction: column; align-items: flex-start; gap: 0.3rem; }
+  .mode-badge-row:empty { display: block; min-height: 1.75rem; }
   .mode-state { position: static; }
   .mode-name { font-size: 1.02rem; }
   .mode-text { font-size: 0.88rem; hyphens: auto; }
@@ -151,7 +159,17 @@
 .strip-name { font-size: 0.9rem; }
 .comb-slots { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
 .comb-slot { width: 100%; min-height: 6.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; border-radius: 20px; border: 3px dashed var(--forest); background: rgba(255, 253, 247, 0.97); color: var(--forest); font-weight: 800; padding: 0.35rem; }
+.comb-slots li { display: flex; }
 .comb-slot.filled { border-style: solid; background: #eef6e6; }
+/* Nach einem Fehlversuch: Stand je Platz zusätzlich zur Farbe mit Zeichen und Wort */
+.comb-slot.comb-ok { border-color: var(--ok); background: #e3f2d6; }
+.comb-slot.comb-look { border-color: #b5651d; border-style: dashed; background: #fff3dc; }
+.own-finds { display: flex; flex-direction: column; gap: 0.6rem; }
+.find-group-title { font-size: 1.05rem; margin: 0 0 0.3rem; color: var(--forest); }
+.find-group-sym { font-weight: 600; color: var(--muted); }
+.comb-mark { font-size: 0.85rem; font-weight: 800; line-height: 1.15; text-align: center; }
+.comb-ok .comb-mark { color: #1f5a22; }
+.comb-look .comb-mark { color: #6b3a0a; }
 .comb-name { font-size: 0.95rem; }
 .tray { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
 .tray-key { width: 100%; min-height: 4.6rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; border-radius: 20px; border: 3px solid var(--forest); background: var(--paper); color: var(--forest); font-weight: 800; padding: 0.3rem; }

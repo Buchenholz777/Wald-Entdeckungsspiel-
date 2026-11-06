@@ -3,6 +3,7 @@ import {
   ESCAPE_KEY,
   addFound,
   addPause,
+  checkAttempt,
   clearSlot,
   continueFree,
   createEscape,
@@ -202,7 +203,9 @@ export function useEscape(settings: Settings, saveSettings: (patch: Partial<Sett
           ok = r.ok;
           return r.ok ? r.mission : m;
         });
-        setAnnounce(ok ? 'Der Tresor ist offen!' : 'Das war noch nicht die richtige Reihenfolge. Ihr könnt es gleich wieder versuchen.');
+        const m = ref.current;
+        // Genau eine Rückmeldung: der konkrete Hinweis (sichtbar und für Screenreader), keine zweite allgemeine Fehlermeldung.
+        setAnnounce(ok ? 'Der Tresor ist offen!' : m?.solution ? checkAttempt(m.solution, m.input, m.age === '4-6' ? 'strip' : 'clues').message : '');
         return ok;
       },
       helpOpen: () => {

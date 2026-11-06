@@ -54,7 +54,7 @@ export function sanitizeEscape(raw: unknown): EscapeMission | null {
     if (!finite(t.target) || t.target < 1 || t.target > 10 || !finite(t.found) || t.found < 0 || t.found > t.target) return null;
     if (!['open', 'done'].includes(t.status as string) || !['single', 'count'].includes(t.mode as string)) return null;
     if (!isObj(t.info) || typeof t.info.whatIsIt !== 'string' || typeof t.info.origin !== 'string' || typeof t.info.whereToLook !== 'string') return null;
-    if (!isObj(t.image) || typeof t.image.illustrationKey !== 'string' || typeof t.image.alt !== 'string') return null;
+    // Bilddaten dürfen in alten Ständen fehlen oder unvollständig sein: Sie werden unten aus dem Katalog oder mit einem ruhigen Ersatz ergänzt.
   }
   const rawTasks = raw.tasks as unknown as (EscapeMission['tasks'][number] & { symbol?: SymbolId })[];
   const uids = new Set(rawTasks.map((t) => t.uid));
@@ -99,7 +99,17 @@ export function sanitizeEscape(raw: unknown): EscapeMission | null {
     const { symbol: _s, ...clean } = t;
     void _s;
     const tpl = templatesById[clean.templateId];
-    return (tpl ? { ...clean, image: tpl.image } : clean) as EscapeMission['tasks'][number];
+    if (tpl) return { ...clean, image: tpl.image } as EscapeMission['tasks'][number];
+    // Unbekannte Vorlage und lückenhafte Bilddaten: Namen und Texte der Karte bleiben lesbar, das Bild ist dann ein ruhiger Ersatz.
+    const img = isObj(clean.image) ? (clean.image as Partial<EscapeMission['tasks'][number]['image']>) : {};
+    const image = {
+      illustrationKey: typeof img.illustrationKey === 'string' ? img.illustrationKey : '',
+      animationPreset: img.animationPreset ?? 'settle',
+      variantTags: Array.isArray(img.variantTags) ? img.variantTags : [],
+      recognitionFeatures: Array.isArray(img.recognitionFeatures) ? img.recognitionFeatures : [],
+      alt: typeof img.alt === 'string' ? img.alt : clean.title ?? clean.prompt,
+    };
+    return { ...clean, image } as EscapeMission['tasks'][number];
   });
   const out: EscapeMission & { keys?: unknown } = {
     ...m,

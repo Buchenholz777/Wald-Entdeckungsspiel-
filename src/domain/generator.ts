@@ -215,14 +215,56 @@ export function materialize(t: TaskTemplate, p: RoundParams, rng: Rng, replacedF
  * Naturschauspiele (Wellen) und Tierbegegnungen stehen nie am Anfang. Unter den passenden Kandidaten entscheidet die Zufallsfunktion,
  * damit nicht jede Runde mit demselben Motiv beginnt.
  */
+/**
+ * Gut auffindbare Einstiege (Fassung 4.2): Familien stehen am Waldweg und sollen mit einem Fund beginnen, den sie meist schnell sehen:
+ * ein Blatt auf dem Boden, ein Nadelzweig, Moos, ein Zapfen, eine Eichel, ein gegabelter Zweig. Seltenere Funde (Blattskelett, Flechte,
+ * Baumpilz, Spuren, Netze, Fraßspuren, Gallen, Hüllen und Knospen) bleiben als spätere oder freiwillige Entdeckung interessant, stehen aber nie
+ * am Anfang. „Häufig“ im Katalog (Jahreszeit) reicht dafür nicht: Das Blattskelett gilt im Herbst als häufig, ist aber schwer zu finden.
+ */
+const EASY_OPENERS: Record<string, number> = {
+  'leaf-vein-net': 3,
+  'leaf-hole': 2,
+  'needle-twig': 2,
+  moss: 2,
+  cone: 2,
+  acorn: 2,
+  'y-twig': 2,
+  hazelnut: 1,
+  beechnut: 1,
+  chestnut: 1,
+  'fern-frond': 1,
+  'maple-leaf': 2,
+  'oak-leaf': 1.5,
+};
+export const isEasyOpener = (templateId: string): boolean => templateId in EASY_OPENERS;
+
 function openingFirst(picks: Pick[], rng: Rng): Pick[] {
   if (picks.length < 2) return picks;
-  const concrete = picks.filter((p) => p.t.completionMode !== 'compare' && p.t.family !== 'abstract' && p.t.family !== 'water' && p.t.family !== 'animals');
-  const pool = concrete.length > 0 ? concrete : picks;
-  const common = pool.filter((p) => p.common);
-  const choices = common.length > 0 ? common : pool;
-  const first = choices[Math.floor(rng() * choices.length)];
+  const easy = picks.filter((p) => isEasyOpener(p.t.id));
+  let first: Pick | undefined;
+  if (easy.length > 0) {
+    first = weightedPick(easy, (p) => EASY_OPENERS[p.t.id], rng);
+  } else {
+    const concrete = picks.filter((p) => p.t.completionMode !== 'compare' && p.t.family !== 'abstract' && p.t.family !== 'water' && p.t.family !== 'animals');
+    const pool = concrete.length > 0 ? concrete : picks;
+    const common = pool.filter((p) => p.common);
+    const choices = common.length > 0 ? common : pool;
+    first = choices[Math.floor(rng() * choices.length)];
+  }
+  if (!first) return picks;
   return [first, ...picks.filter((p) => p !== first)];
+}
+
+/** Hat die Auswahl keinen gut auffindbaren Einstieg, wird die letzte Wahl durch einen passenden aus dem Pool ersetzt (derselbe Filter wie sonst). */
+function ensureEasyOpener(chosen: Pick[], pool: TaskTemplate[], rng: Rng, p: RoundParams): Pick[] {
+  if (chosen.length < 2 || chosen.some((c) => isEasyOpener(c.t.id))) return chosen;
+  const used = new Set(chosen.map((c) => conceptGroup(c.t.conceptId)));
+  const candidates = pool.filter((t) => isEasyOpener(t.id) && !used.has(conceptGroup(t.conceptId)) && t.completionMode !== 'compare');
+  const pick = weightedPick(candidates, (t) => EASY_OPENERS[t.id], rng);
+  if (!pick) return chosen;
+  const out = chosen.slice(0, -1);
+  out.push({ t: pick, common: likelihoodFor(pick, FOREST, p.season) === 'common' });
+  return out;
 }
 export function generateRound(params: GenerateParams): GenerateResult {
   const catalog = params.catalog ?? defaultTemplates;
@@ -239,7 +281,7 @@ export function generateRound(params: GenerateParams): GenerateResult {
     if (!next) break; // Pool erschöpft: ehrliche kleinere Runde, kein Auffüllen
     chosen.push(next);
   }
-  const ordered = openingFirst(chosen, params.rng);
+  const ordered = openingFirst(ensureEasyOpener(chosen, pool, params.rng, params), params.rng);
   const tasks = ordered.map((c) => materialize(c.t, params, params.rng));
 
   let notice: string | undefined;
@@ -273,9 +315,31 @@ export function generateRound(params: GenerateParams): GenerateResult {
   return { round, poolConcepts };
 }
 
+/** Alles, was „Tausch rückgängig“ braucht: die ersetzte Aufgabe mit ihrem Zählstand und die vorherige Ausschlussliste. */
+export interface SwapUndo {
+  /** uid der neuen Aufgabe (die wieder verschwindet) */
+  newUid: string;
+  /** die ursprüngliche Aufgabe, unverändert mit Teilfortschritt */
+  previous: RoundTask;
+  previousExcluded: string[];
+}
+
 export interface ReplaceResult {
   round: Round | null;
   reason?: 'no-alternative';
+  undo?: SwapUndo;
+}
+
+/**
+ * „Tausch rückgängig“: stellt genau die ersetzte Aufgabe wieder her, bei einer Zählaufgabe samt vorherigem Teilfortschritt, und die frühere
+ * Ausschlussliste. Alle anderen Aufgaben, ihre Funde und der Missionstitel bleiben unberührt. Ohne passende neue Aufgabe geschieht nichts.
+ */
+export function restoreSwap(round: Round, undo: SwapUndo): Round {
+  const i = round.tasks.findIndex((t) => t.uid === undo.newUid);
+  if (i < 0) return round;
+  const tasks = round.tasks.slice();
+  tasks[i] = undo.previous;
+  return { ...round, tasks, excludedConcepts: undo.previousExcluded };
 }
 
 /**
@@ -317,7 +381,9 @@ export function replaceTask(round: Round, uid: string, rng: Rng, catalog: TaskTe
       tasks,
       excludedConcepts: [...excluded],
       notice: undefined,
-      mission: buildMission(round.age, tasks, (id) => catalog.find((t) => t.id === id)?.themes, lead),
+      // Missionstitel und Einleitung bleiben beim Tausch erhalten; nur diese eine Aufgabe wechselt.
+      mission: round.mission,
     },
+    undo: { newUid: replacement.uid, previous: old, previousExcluded: round.excludedConcepts },
   };
 }

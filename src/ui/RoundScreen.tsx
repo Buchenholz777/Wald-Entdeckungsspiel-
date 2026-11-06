@@ -58,6 +58,7 @@ export function RoundScreen({ game, go }: Props) {
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [riddleOpen, setRiddleOpen] = useState(false);
+  const [missionOpen, setMissionOpen] = useState(false);
   const speech = useSpeech();
 
   // Beim Wechsel der Aufgabe: Bewegung einmal abspielen, Hinweise wieder einklappen
@@ -175,13 +176,6 @@ export function RoundScreen({ game, go }: Props) {
         </div>
       </header>
 
-      {round.mission && (
-        <section className="mission" aria-label="Mission">
-          <p className="mission-title">{round.mission.title}</p>
-          {prog.done === 0 && prog.skipped === 0 && <p className="mission-intro">{round.mission.intro}</p>}
-        </section>
-      )}
-
       <section aria-label="Fortschritt" className="progress-wrap">
         <p className="progress-text" id="round-progress">
           {prog.done} von {prog.total} Stationen geschafft
@@ -205,6 +199,21 @@ export function RoundScreen({ game, go }: Props) {
       )}
 
       <article className={`card status-${task.status}`} aria-labelledby="task-title">
+        {/* Der konkrete Suchsatz steht zuerst, vor dem Bild: genau eine Aufgabe, ihr Stand und woran man sie erkennt */}
+        <div className="card-head">
+          <h2 id="task-title" className="task-title">
+            {task.prompt}
+          </h2>
+          <p className={`counter${task.status === 'done' ? ' counter-done' : ''}`}>
+            {task.status === 'done' && <IconCheck size={20} />}
+            {counterText(task)}
+          </p>
+          {task.image.recognitionFeatures.length > 0 && (
+            <p className="task-clue">
+              <span className="task-clue-label">Erkennbar an:</span> {task.image.recognitionFeatures.slice(0, 2).join(' · ')}
+            </p>
+          )}
+        </div>
         <div className="card-art">
           <button type="button" className="art-btn" onClick={() => setDialog('zoom')} aria-label={`Bild vergrößern: ${task.image.alt}`}>
             <Illustration illustrationKey={task.image.illustrationKey} preset={task.image.animationPreset} play={play} playId={playId} />
@@ -230,14 +239,6 @@ export function RoundScreen({ game, go }: Props) {
         <p className="example-note">So kann es aussehen. Euer Fund darf etwas anders sein.</p>
 
         <div className="card-body">
-          <h2 id="task-title" className="task-title">
-            {task.prompt}
-          </h2>
-          <p className={`counter${task.status === 'done' ? ' counter-done' : ''}`}>
-            {task.status === 'done' && <IconCheck size={20} />}
-            {counterText(task)}
-          </p>
-
           {task.riddle && (
             <div className="riddle">
               <p>
@@ -297,6 +298,21 @@ export function RoundScreen({ game, go }: Props) {
         </div>
       </article>
 
+      {round.mission && (
+        <section className="mission mission-fold" aria-label="Mission">
+          <button type="button" className="help-toggle" aria-expanded={missionOpen} aria-controls="mission-panel" onClick={() => setMissionOpen((o) => !o)}>
+            Über diese Mission
+            <IconChevron open={missionOpen} />
+          </button>
+          {missionOpen && (
+            <div id="mission-panel" className="mission-panel">
+              <p className="mission-title">{round.mission.title}</p>
+              <p className="mission-intro">{round.mission.intro}</p>
+            </div>
+          )}
+        </section>
+      )}
+
       <nav className="tasklist" aria-label="Alle Stationen">
         <h3 className="tasklist-title">Eure Stationen</h3>
         <ol>
@@ -326,6 +342,14 @@ export function RoundScreen({ game, go }: Props) {
       </nav>
 
       <div className="action-bar action-bar-round">
+        {game.swapUndo && (
+          <div className="swap-undo" role="status">
+            <span>Die Aufgabe wurde getauscht.</span>
+            <button type="button" className="btn btn-quiet" onClick={game.undoSwap}>
+              <IconUndo /> Tausch rückgängig
+            </button>
+          </div>
+        )}
         <button type="button" className={`btn btn-primary btn-big${task.status !== 'open' ? ' btn-next' : ''}`} onClick={onMain} disabled={mainDisabled}>
           {mainLabel}
           {task.status !== 'open' && <IconArrow />}

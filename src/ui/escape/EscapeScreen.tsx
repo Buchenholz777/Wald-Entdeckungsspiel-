@@ -4,6 +4,7 @@ import { giftsById } from '../../catalog/gifts';
 import {
   KEY_COUNT,
   SYMBOL_INFO,
+  checkAttempt,
   completedTasks,
   describeClue,
   formatClock,
@@ -19,6 +20,7 @@ import {
   tipText,
   type EscapeMission,
   type EscapeTask,
+  type SymbolId,
 } from '../../domain/escape';
 import { SEASON_LABEL } from '../../domain/meta';
 import { Illustration } from '../../illustrations/Illustration';
@@ -548,7 +550,8 @@ function KeyStrip({ order }: { order: EscapeMission['input'] }) {
 
 function Combination({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Route) => void }) {
   const A = esc.act;
-  const [wrong, setWrong] = useState(false);
+  // Die zuletzt versuchte Folge: Solange sie unverändert liegt, zeigt der Tresor genau einen konkreten Hinweis. Jede Änderung blendet ihn aus.
+  const [tried, setTried] = useState<(SymbolId | null)[] | null>(null);
   const [dialog, setDialog] = useState<CombDialog>(null);
   const solution = m.solution!;
   const full = m.input.every((s) => s !== null);
@@ -561,9 +564,11 @@ function Combination({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Ro
     go('/');
   };
 
+  const check = tried && tried.every((s, i) => s === m.input[i]) ? checkAttempt(solution, m.input, young ? 'strip' : 'clues') : null;
+
   const tryOpen = () => {
     const ok = A.open();
-    setWrong(!ok);
+    setTried(ok ? null : m.input.slice());
   };
 
   return (
@@ -613,23 +618,33 @@ function Combination({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Ro
 
       <section aria-label="Eure Tresorplätze">
         <h2 className="comb-h">Eure Tresorplätze (links nach rechts)</h2>
+        {check && !check.allRight && <p className="wrong-note">{check.message}</p>}
         <ol className="comb-slots" role="group" aria-label="Tresorplätze von links nach rechts">
-          {m.input.map((s, i) => (
-            <li key={i}>
-              <button
-                type="button"
-                className={`comb-slot${s ? ' filled' : ''}`}
-                onClick={() => (s ? A.clear(i) : undefined)}
-                aria-label={s ? `Platz ${i + 1}: ${SYMBOL_INFO[s].name}. Antippen zum Entfernen.` : `Platz ${i + 1}: noch leer`}
-              >
-                <span className="comb-no" aria-hidden="true">
-                  {i + 1}
-                </span>
-                {s ? <SymbolIcon symbol={s} size={52} /> : <LockMark />}
-                <span className="comb-name">{s ? SYMBOL_INFO[s].name : 'leer'}</span>
-              </button>
-            </li>
-          ))}
+          {m.input.map((s, i) => {
+            // Nach einem Fehlversuch: richtige Plätze mit Häkchen und Wort „passt“, die erste Stelle zum Nachdenken mit Ausrufezeichen und „Hier schauen“ (nicht nur Farbe)
+            const mark = check ? (check.correct[i] ? 'ok' : i === check.firstWrong ? 'look' : null) : null;
+            return (
+              <li key={i}>
+                <button
+                  type="button"
+                  className={`comb-slot${s ? ' filled' : ''}${mark ? ` comb-${mark}` : ''}`}
+                  onClick={() => (s ? A.clear(i) : undefined)}
+                  aria-label={`${s ? `Platz ${i + 1}: ${SYMBOL_INFO[s].name}. Antippen zum Entfernen.` : `Platz ${i + 1}: noch leer`}${mark === 'ok' ? ' Dieser Platz passt schon.' : mark === 'look' ? ' Hier noch einmal schauen.' : ''}`}
+                >
+                  <span className="comb-no" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  {s ? <SymbolIcon symbol={s} size={52} /> : <LockMark />}
+                  <span className="comb-name">{s ? SYMBOL_INFO[s].name : 'leer'}</span>
+                  {mark && (
+                    <span className="comb-mark" aria-hidden="true">
+                      {mark === 'ok' ? '✓ passt' : '! Hier schauen'}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
         </ol>
       </section>
 
@@ -640,7 +655,7 @@ function Combination({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Ro
             const placed = m.input.includes(s);
             return (
               <li key={s}>
-                <button type="button" className="tray-key" disabled={placed} onClick={() => { A.place(s); setWrong(false); }} aria-label={placed ? `${SYMBOL_INFO[s].name}: schon eingesetzt` : `${SYMBOL_INFO[s].name} einsetzen`}>
+                <button type="button" className="tray-key" disabled={placed} onClick={() => A.place(s)} aria-label={placed ? `${SYMBOL_INFO[s].name}: schon eingesetzt` : `${SYMBOL_INFO[s].name} einsetzen`}>
                   <SymbolIcon symbol={s} size={48} />
                   <span>{SYMBOL_INFO[s].name}</span>
                 </button>
@@ -649,12 +664,6 @@ function Combination({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Ro
           })}
         </ul>
       </section>
-
-      {wrong && (
-        <p className="wrong-note" role="status">
-          Schaut noch einmal auf die Reihenfolge. Ihr könnt es gleich wieder versuchen.
-        </p>
-      )}
 
       <div className="action-bar action-bar-round">
         <button type="button" className="btn btn-primary btn-big" onClick={tryOpen} disabled={!full}>
@@ -704,6 +713,38 @@ function Combination({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Ro
 
 /* ============================ Abschluss ============================ */
 
+/**
+ * Eine kleine Beobachtungsfrage zu einem der tatsächlich bestätigten Funde. Die Wahl hängt nur vom gespeicherten Seed der Mission ab:
+ * Beim erneuten Öffnen erscheint dieselbe Frage zum selben Fund. Bevorzugt werden echte Fragen aus den vorhandenen Entdeckermomenten.
+ */
+function observationQuestion(m: EscapeMission, found: EscapeTask[]): { task: EscapeTask; text: string } | null {
+  const withText = found
+    .map((t) => ({ task: t, text: (OBSERVE[t.templateId] ?? t.moment ?? t.talk ?? '').trim(), own: t.templateId in OBSERVE }))
+    .filter((x) => x.text.length > 0);
+  if (withText.length === 0) return null;
+  // erst die eigens formulierten Fragen zu einem konkreten Merkmal, sonst echte Fragen aus den Entdeckermomenten, sonst jeder vorhandene Text
+  const own = withText.filter((x) => x.own);
+  const real = withText.filter((x) => x.text.includes('?'));
+  const list = own.length > 0 ? own : real.length > 0 ? real : withText;
+  return list[(m.seed >>> 0) % list.length];
+}
+
+/** Kurze, konkrete Beobachtungsfragen zu einem Merkmal, das man am eigenen Fund wirklich gesehen hat. */
+const OBSERVE: Record<string, string> = {
+  'leaf-hole': 'Welche Form hatte das Loch in eurem Blatt?',
+  'leaf-vein-net': 'Wohin liefen die feinen Adern in eurem Blatt?',
+  'y-twig': 'Wie viele Äste gingen von der Gabel eures Zweiges ab, und wohin zeigten sie?',
+  moss: 'War euer Moospolster flach oder gewölbt, und wie sah die Oberfläche aus?',
+  'needle-twig': 'Wie saßen die Nadeln an eurem Zweig: einzeln rundherum oder zu mehreren?',
+  cone: 'Wie sahen die Schuppen an eurem Zapfen aus: eng anliegend oder abstehend?',
+  acorn: 'Wie sah das Hütchen an eurer Eichel aus?',
+  hazelnut: 'Welche Farbe und Form hatte eure Haselnuss?',
+};
+
+/** Kurzer Name eines Fundes; bei sehr allgemeinen Konzeptnamen ein genauerer. */
+const FIND_NAME: Record<string, string> = { 'leaf-hole': 'Ein Blatt mit Loch' };
+const findName = (t: EscapeTask): string => FIND_NAME[t.templateId] ?? subject(t);
+
 function Result({ esc, m, motionOff, go }: { esc: Escape; m: EscapeMission; motionOff: boolean; go: (r: Route) => void }) {
   const A = esc.act;
   const opened = m.phase === 'opened';
@@ -713,6 +754,7 @@ function Result({ esc, m, motionOff, go }: { esc: Escape; m: EscapeMission; moti
   const [finds, setFinds] = useState(false);
   const found = completedTasks(m);
   const prog = progressOf(m);
+  const question = opened ? observationQuestion(m, found) : null;
 
   // Der Tresor öffnet sich einmal sanft; das Konfetti läuft genau einmal pro Mission (Zustand wird sofort gespeichert).
   useEffect(() => {
@@ -752,6 +794,46 @@ function Result({ esc, m, motionOff, go }: { esc: Escape; m: EscapeMission; moti
       </div>
       {confetti && <Confetti onDone={() => setConfetti(false)} />}
 
+      {/* Zuerst die eigenen, tatsächlich bestätigten Entdeckungen dieser Mission, gruppiert nach Schlüssel; danach das Waldgeschenk */}
+      {opened && found.length > 0 && (
+        <section aria-label="Eure Entdeckungen" className="own-finds">
+          <h2 className="collection-title">Das habt ihr entdeckt</h2>
+          {keyGroups(m)
+            .filter((g) => g.fragments.length > 0)
+            .map((g) => (
+              <div key={g.index} className="find-group">
+                <h3 className="find-group-title">
+                  Schlüssel {g.index + 1}
+                  {g.complete && <span className="find-group-sym"> · {SYMBOL_INFO[g.symbol].name}</span>}
+                </h3>
+                <ul className="collection">
+                  {g.fragments.map((c) => {
+                    const t = m.tasks.find((x) => x.uid === c.uid);
+                    if (!t) return null;
+                    return (
+                      <li key={c.uid} className="find find-done">
+                        <div className="find-art">
+                          {t.image?.illustrationKey && <Illustration illustrationKey={t.image.illustrationKey} preset={t.image.animationPreset} />}
+                          <span className="find-stamp" aria-hidden="true">
+                            <IconCheck size={22} />
+                          </span>
+                        </div>
+                        <p className="find-title">{findName(t)}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          {question && (
+            <aside className="moment" aria-label="Kleine Beobachtungsfrage">
+              <p className="moment-label">Eine kleine Frage zu „{findName(question.task)}“</p>
+              <p>{question.text}</p>
+            </aside>
+          )}
+        </section>
+      )}
+
       {opened && gift && (
         <section aria-label="Euer Waldgeschenk" className="gift-section">
           <h2 className="collection-title">Euer Waldgeschenk</h2>
@@ -763,7 +845,7 @@ function Result({ esc, m, motionOff, go }: { esc: Escape; m: EscapeMission; moti
         <p className="muted">Ein Waldgeschenk gibt es, wenn ihr alle drei Schlüssel gefunden und den Tresor geöffnet habt. Ihr könnt jederzeit eine neue Wald-Escape-Mission starten.</p>
       )}
 
-      {finds && (
+      {finds && !opened && (
         <section aria-label="Eure Funde" className="finds-section">
           <h2 className="collection-title">Eure Waldaufgaben</h2>
           <ul className="collection">
@@ -787,7 +869,7 @@ function Result({ esc, m, motionOff, go }: { esc: Escape; m: EscapeMission; moti
       )}
 
       <div className="summary-actions">
-        {found.length > 0 && (
+        {found.length > 0 && !opened && (
           <button type="button" className="btn btn-primary btn-big" onClick={() => setFinds((f) => !f)} aria-expanded={finds}>
             {finds ? 'Fundschatz ausblenden' : 'Unseren Fundschatz ansehen'}
           </button>

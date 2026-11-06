@@ -73,7 +73,8 @@ export function sanitizeSettings(raw: unknown): Settings {
     for (const id of raw.giftsReceived) if (typeof id === 'string' && giftsById[id] && !seen.includes(id)) seen.push(id);
     out.giftsReceived = seen;
   }
-  if (GAME_MODES.includes(raw.mode as GameMode)) out.mode = raw.mode as GameMode;
+  // „Walddetektive“ ist noch nicht spielbar: Eine aus einer älteren Sitzung gespeicherte Auswahl öffnet wieder „Waldschätze suchen“.
+  if (GAME_MODES.includes(raw.mode as GameMode) && raw.mode !== 'detective') out.mode = raw.mode as GameMode;
   // Ältere Einstellungen kennen die Größe noch nicht: Ihr früherer Standardwert (15) war nie eine bewusste Wahl und gilt nicht weiter.
   if ('escapeSize' in raw) {
     if (raw.escapeMinutes === 10 || raw.escapeMinutes === 15 || raw.escapeMinutes === 20 || raw.escapeMinutes === 30) out.escapeMinutes = raw.escapeMinutes;

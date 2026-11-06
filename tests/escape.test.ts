@@ -7,6 +7,7 @@ import {
   addFound,
   addPause,
   canPlayEscape,
+  checkAttempt,
   clearSlot,
   completedTasks,
   continueFree,
@@ -654,6 +655,41 @@ describe('Wald Escape: Symbolrätsel', () => {
     expect(describeClue({ kind: 'rightOf', a: 'cone', b: 'acorn' })).toBe('Der Zapfen liegt rechts von der Eichel.');
   });
 
+  it('Fehlversuch: ein konkreter Hinweis gegen die echte Lösung, mit richtigem Platz, ohne richtigen Platz und bei richtiger Folge', () => {
+    const solution: SymbolId[] = ['drop', 'mushroom', 'cone'];
+    // Beispiel aus dem Auftrag: Zapfen – Pilz – Tropfen
+    const one = checkAttempt(solution, ['cone', 'mushroom', 'drop'], 'strip');
+    expect(one.correct).toEqual([false, true, false]);
+    expect(one.firstWrong).toBe(0);
+    expect(one.message).toBe('Der Pilz in der Mitte stimmt schon. Schau auf das erste Zeichen.');
+    // stimmt nur der dritte Platz: Hinweis nennt ihn und zeigt auf den ersten falschen
+    expect(checkAttempt(solution, ['mushroom', 'drop', 'cone'], 'clues').message).toBe('Der Zapfen ganz rechts stimmt schon. Schau auf das erste Zeichen.');
+    // kein Platz passt: erster Platz plus Vorlagestreifen (4–6) bzw. Hinweise (7–10)
+    const none: (SymbolId | null)[] = ['mushroom', 'cone', 'drop'];
+    expect(checkAttempt(solution, none, 'strip').message).toBe('Noch passt kein Platz. Schau auf den ersten Platz und den Vorlagestreifen.');
+    expect(checkAttempt(solution, none, 'clues').message).toBe('Noch passt kein Platz. Schau auf den ersten Platz und die Hinweise.');
+    expect(checkAttempt(solution, none, 'strip').correct).toEqual([false, false, false]);
+    // richtige Folge: nichts zu sagen
+    const ok = checkAttempt(solution, solution, 'strip');
+    expect(ok).toMatchObject({ allRight: true, firstWrong: -1, message: '' });
+  });
+
+  it('der Hinweis verrät nie die ganze Lösung und gilt für jede mögliche falsche Folge', () => {
+    const solution: SymbolId[] = ['sun', 'moon', 'leaf'];
+    for (const p of permutations(solution)) {
+      const r = checkAttempt(solution, p, 'strip');
+      if (p.join() === solution.join()) {
+        expect(r.allRight).toBe(true);
+        continue;
+      }
+      expect(r.message.length).toBeGreaterThan(10);
+      // genau ein Satz zum Stand und ein Satz zur nächsten Stelle; nie die komplette Reihenfolge
+      expect(r.message.split(/(?<=[.!?])\s+/).length).toBe(2);
+      expect(r.message).not.toContain('–');
+      expect(r.correct.filter(Boolean).length).not.toBe(2);
+    }
+  });
+
   it('4–6: Streifen als Vorbild, keine Hinweise nötig; Eingabe wird nachgebaut', () => {
     const m = atCombination('4-6', 5);
     expect(m.clues).toBeNull();
@@ -808,7 +844,8 @@ describe('Frühere Missionen und Einstellungen', () => {
     expect(DEFAULT_SETTINGS.escapeMinutes).toBeNull();
     expect(sanitizeSettings({ mode: 'kaputt', escapeSize: 'small', escapeMinutes: 7 })).toMatchObject({ mode: 'treasure', escapeMinutes: null, escapeSize: 'small' });
     expect(sanitizeSettings({ mode: 'escape', escapeSize: 'large', escapeMinutes: 30 })).toMatchObject({ mode: 'escape', escapeMinutes: 30, escapeSize: 'large' });
-    expect(sanitizeSettings({ mode: 'detective' }).mode).toBe('detective');
+    // Walddetektive ist noch nicht spielbar: Eine gespeicherte Auswahl öffnet wieder Waldschätze suchen.
+    expect(sanitizeSettings({ mode: 'detective' }).mode).toBe('treasure');
   });
 
   it('alter Standardwert 15 Minuten (ohne Größenangabe) war nie eine bewusste Wahl und gilt nicht weiter', () => {
@@ -860,6 +897,21 @@ describe('Wald Escape: Speicherung', () => {
     const loaded = p.load(T0 + 2000).mission!;
     expect(loaded.tasks[1].image.alt).toBe(m.tasks[1].image.alt);
     expect(progressOf(loaded).done).toBe(1);
+  });
+
+  it('ein alter Stand mit fehlenden Bilddaten bleibt mit den verfügbaren Namen lesbar', () => {
+    let m = finishN(mission({}, 29), 1);
+    const raw = JSON.parse(JSON.stringify(m)) as EscapeMission & Record<string, unknown>;
+    delete (raw.tasks[0] as unknown as Record<string, unknown>).image;
+    raw.tasks[0].templateId = 'gibt-es-nicht-mehr';
+    const loaded = sanitizeEscape(raw)!;
+    expect(loaded).not.toBeNull();
+    expect(loaded.tasks[0].title).toBe(m.tasks[0].title);
+    expect(loaded.tasks[0].image.alt.length).toBeGreaterThan(3);
+    expect(loaded.tasks[0].image.illustrationKey).toBe('');
+    expect(loaded.completed.length).toBe(1);
+    m = loaded;
+    expect(completedTasks(m)[0].title).toBe(raw.tasks[0].title);
   });
 
   it('beschädigter, fremder oder gesperrter Speicher führt nie zum Absturz', () => {

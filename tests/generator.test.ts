@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { templates } from '../src/catalog/templates';
-import { generateRound, replaceTask, type GenerateParams } from '../src/domain/generator';
+import { eligibleTemplates, generateRound, isEasyOpener, replaceTask, restoreSwap, type GenerateParams } from '../src/domain/generator';
+import { addFound as addFoundRound } from '../src/domain/round';
 import { THEME_INFO } from '../src/domain/meta';
-import { likelihoodFor } from '../src/domain/resolve';
 import { tally } from './distribution';
 import { seededRng } from '../src/domain/rng';
 import { AGE_GROUPS, FOREST, SEASONS, THEMES, type AgeGroup, type ContextTag, type Season, type Theme } from '../src/domain/types';
@@ -155,16 +155,41 @@ describe('Generator (nur Wald)', () => {
     expect(overlapWith(avoid)).toBeLessThan(overlapWith(undefined));
   });
 
-  it('beginnt mit einem konkreten, häufigen Fund (kein Vergleich, kein Tier)', () => {
+  it('beginnt mit einem gut auffindbaren Fund (Blatt, Nadelzweig, Moos, Zapfen, Eichel …), nie mit einem seltenen, einem Vergleich oder einem Tier', () => {
+    const HARD = ['leaf-skeleton', 'lichen', 'bracket-fungus', 'spider-web', 'leaf-mine', 'gall', 'gnawed-nut', 'gnawed-cone', 'animal-track', 'deer-track', 'dog-track', 'fern-spores', 'mushroom'];
     for (const season of SEASONS) {
-      for (let seed = 1; seed <= 20; seed++) {
-        const r = generateRound(params({ season, seed })).round!;
-        const first = byId(r.tasks[0].templateId);
-        expect(first.completionMode).not.toBe('compare');
-        expect(first.family).not.toBe('animals');
-        const anyCommon = r.tasks.some((t) => t.mode !== 'compare' && t.family !== 'animals' && likelihoodFor(byId(t.templateId), FOREST, season) === 'common');
-        if (anyCommon) expect(likelihoodFor(first, FOREST, season)).toBe('common');
+      for (const age of AGE_GROUPS) {
+        for (let seed = 1; seed <= 20; seed++) {
+          const r = generateRound(params({ season, age, seed, count: age === '2-3' ? 3 : 5 })).round!;
+          const first = byId(r.tasks[0].templateId);
+          expect(first.completionMode).not.toBe('compare');
+          expect(first.family).not.toBe('animals');
+          expect(HARD, `${season}/${age}/${seed}: ${first.id}`).not.toContain(first.id);
+          // Gibt es im Pool einen auffindbaren Einstieg, steht einer vorn.
+          const anyEasy = eligibleTemplates({ age, environment: FOREST, season, seasonSource: 'auto', context: [], boost: false }).some((t) => isEasyOpener(t.id));
+          if (anyEasy) expect(isEasyOpener(first.id), `${season}/${age}/${seed}: ${first.id}`).toBe(true);
+        }
       }
+    }
+  });
+
+  it('„Hier nicht zu finden“ ändert nur diese Aufgabe; „Tausch rückgängig“ bringt sie samt Zählstand zurück, Missionstitel und andere Funde bleiben', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      let r = generateRound(params({ season: 'autumn', age: '7-10', seed })).round!;
+      r = addFoundRound(r, r.tasks[1].uid);
+      const target = r.tasks.findIndex((t, i) => i > 1 && t.target > 1) >= 0 ? r.tasks.findIndex((t, i) => i > 1 && t.target > 1) : 2;
+      if (r.tasks[target].target > 1) r = addFoundRound(r, r.tasks[target].uid);
+      const before = JSON.parse(JSON.stringify(r)) as typeof r;
+      const res = replaceTask(r, r.tasks[target].uid, seededRng(seed + 99));
+      expect(res.round).not.toBeNull();
+      const swapped = res.round!;
+      expect(swapped.mission).toEqual(before.mission); // Titel und Einleitung bleiben
+      expect(swapped.tasks[target].uid).not.toBe(before.tasks[target].uid);
+      swapped.tasks.forEach((t, i) => {
+        if (i !== target) expect(t).toEqual(before.tasks[i]);
+      });
+      const restored = restoreSwap(swapped, res.undo!);
+      expect(restored).toEqual(before);
     }
   });
 
