@@ -624,14 +624,8 @@ dialog.modal-info .modal-body { max-height: 88dvh; overflow-y: auto; }
   .home-btn { padding-inline: 0.8rem; }
 }
 
-/* Hauptaktion im Einstieg: kein harter heller Balken ueber dem Wald, sondern ein weicher, auslaufender Schleier */
+/* Hauptaktion im Einstieg: kein heller Balken oder Rahmen um die Schaltflaeche, sie steht frei ueber dem Wald */
 .setup .action-bar { background: none; }
-.setup .action-bar::before {
-  content: ''; position: absolute; inset: -1.6rem 0 0 0; z-index: -1; pointer-events: none;
-  background: linear-gradient(to top, rgba(250, 247, 239, 0.82) 50%, rgba(250, 247, 239, 0));
-  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
-  -webkit-mask-image: linear-gradient(to top, #000 55%, transparent); mask-image: linear-gradient(to top, #000 55%, transparent);
-}
 
 /* ---------- Waldhintergrund (eigene Illustration: docs/BILDNACHWEIS.md) ----------
    Das Bild liegt fest hinter dem Inhalt (kein Layoutsprung). Faellt es aus, bleibt die Waldgruen-Flaeche.
