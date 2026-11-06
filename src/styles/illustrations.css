@@ -1,0 +1,108 @@
+/* Sanfte Bewegung der Suchbilder.
+   Jede Animation läuft einmal (ca. 2–4 s) und endet in der Ruhelage. Das Standbild ist immer vollständig. */
+
+.illu {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.illu .mv,
+.illu .mv2,
+.illu .mv3,
+.illu .rip {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+@keyframes ill-float {
+  0% { transform: translate(0, -26px) rotate(-14deg); opacity: 0.6; }
+  30% { opacity: 1; }
+  52% { transform: translate(8px, 4px) rotate(9deg); }
+  76% { transform: translate(-4px, -1px) rotate(-4deg); }
+  100% { transform: none; }
+}
+@keyframes ill-sway {
+  0% { transform: rotate(-3deg); }
+  28% { transform: rotate(2.6deg); }
+  55% { transform: rotate(-1.8deg); }
+  80% { transform: rotate(0.8deg); }
+  100% { transform: none; }
+}
+@keyframes ill-settle {
+  0% { transform: translateY(-14px) rotate(-22deg) scale(0.94); opacity: 0.6; }
+  35% { opacity: 1; }
+  70% { transform: translateY(2px) rotate(5deg) scale(1); }
+  100% { transform: none; }
+}
+@keyframes ill-grow {
+  0% { transform: scale(0.9) translateY(8px); opacity: 0.6; }
+  40% { opacity: 1; }
+  70% { transform: scale(1.03); }
+  100% { transform: none; }
+}
+@keyframes ill-ripple {
+  0% { transform: scale(0.3); opacity: 0; }
+  40% { opacity: 0.9; }
+}
+@keyframes ill-wave {
+  0% { transform: translateX(-16px); opacity: 0.65; }
+  45% { transform: translateX(8px); opacity: 1; }
+  75% { transform: translateX(-3px); }
+  100% { transform: none; }
+}
+@keyframes ill-bob {
+  0% { transform: translateY(-12px); opacity: 0.65; }
+  30% { transform: translateY(3px); opacity: 1; }
+  55% { transform: translateY(-3px); }
+  100% { transform: none; }
+}
+@keyframes ill-swing {
+  0% { transform: rotate(-16deg); }
+  25% { transform: rotate(12deg); }
+  50% { transform: rotate(-8deg); }
+  75% { transform: rotate(4deg); }
+  100% { transform: none; }
+}
+@keyframes ill-flutter {
+  0% { transform: translate(-10px, -12px) rotate(-6deg); opacity: 0.65; }
+  25% { opacity: 1; transform: translate(4px, -2px) rotate(3deg); }
+  45% { transform: translate(-2px, -6px) rotate(-2deg); }
+  70% { transform: translate(1px, 1px) rotate(1deg); }
+  100% { transform: none; }
+}
+@keyframes ill-draw {
+  0% { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  100% { stroke-dasharray: 1; stroke-dashoffset: 0; }
+}
+
+.illu[data-play='true'][data-preset='float'] .mv { animation: ill-float 3.2s ease-in-out both; }
+.illu[data-play='true'][data-preset='sway'] .mv { animation: ill-sway 3.4s ease-in-out both; transform-origin: 50% 100%; }
+.illu[data-play='true'][data-preset='settle'] .mv { animation: ill-settle 2.6s cubic-bezier(0.3, 0.7, 0.3, 1) both; }
+.illu[data-play='true'][data-preset='grow'] .mv,
+.illu[data-play='true'][data-preset='grow'] .mv2 { animation: ill-grow 2.4s ease-out both; }
+.illu[data-play='true'][data-preset='wave'] .mv { animation: ill-wave 3.4s ease-in-out both; }
+.illu[data-play='true'][data-preset='wave'] .mv2 { animation: ill-wave 4s ease-in-out 0.3s both; }
+.illu[data-play='true'][data-preset='bob'] .mv { animation: ill-bob 2.6s ease-out both; }
+.illu[data-play='true'][data-preset='swing'] .mv { animation: ill-swing 3.6s ease-in-out both; }
+.illu[data-play='true'][data-preset='flutter'] .mv { animation: ill-flutter 3s ease-out both; }
+.illu[data-play='true'][data-preset='ripple'] .rip { animation: ill-ripple 2.6s ease-out both; }
+.illu[data-play='true'][data-preset='ripple'] .rip.d1 { animation-delay: 0.35s; }
+.illu[data-play='true'][data-preset='ripple'] .rip.d2 { animation-delay: 0.7s; }
+.illu[data-play='true'][data-preset='ripple'] .mv { animation: ill-bob 2.8s ease-out both; }
+.illu[data-play='true'][data-preset='draw'] .draw { animation: ill-draw 2.4s ease-in-out both; }
+.illu[data-play='true'][data-preset='draw'] .mv { animation: ill-grow 2.4s ease-out both; }
+
+/* Zweite Gruppe folgt der ersten mit kleinem Versatz */
+.illu[data-play='true'][data-preset='sway'] .mv2 { animation: ill-sway 3.8s ease-in-out 0.25s both; transform-origin: 50% 100%; }
+.illu[data-play='true'][data-preset='float'] .mv2 { animation: ill-float 3.4s ease-in-out 0.2s both; }
+
+/* Bewegung nur, wenn das Fenster sichtbar ist */
+html[data-hidden='true'] .illu * { animation-play-state: paused !important; }
+
+/* Reduzierte Bewegung und „Bewegung aus“: sofort das vollständige Standbild */
+@media (prefers-reduced-motion: reduce) {
+  .illu *, .illu { animation: none !important; }
+}
+html[data-motion='off'] .illu *,
+html[data-motion='off'] .illu { animation: none !important; }
