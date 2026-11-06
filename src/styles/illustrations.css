@@ -93,6 +93,15 @@
 .illu[data-play='true'][data-preset='draw'] .draw { animation: ill-draw 2.4s ease-in-out both; }
 .illu[data-play='true'][data-preset='draw'] .mv { animation: ill-grow 2.4s ease-out both; }
 
+/* Naturgetreue Bilder: nur eine kurze, sanfte Bewegung des ganzen Gegenstands (nie ein Verziehen von Schale, Pilz oder Blatt) */
+@keyframes ill-soft {
+  0% { transform: translateY(-9px); opacity: 0.7; }
+  45% { transform: translateY(1.5px); opacity: 1; }
+  70% { transform: translateY(-1px); }
+  100% { transform: none; }
+}
+.illu[data-play='true'][data-real='true'] .mv { animation: ill-soft 1.7s ease-out both; transform-origin: 50% 50%; }
+
 /* Zweite Gruppe folgt der ersten mit kleinem Versatz */
 .illu[data-play='true'][data-preset='sway'] .mv2 { animation: ill-sway 3.8s ease-in-out 0.25s both; transform-origin: 50% 100%; }
 .illu[data-play='true'][data-preset='float'] .mv2 { animation: ill-float 3.4s ease-in-out 0.2s both; }

@@ -38,10 +38,11 @@ export function Illustration({ illustrationKey, preset, alt, play = false, playI
       data-preset={preset}
       data-play={play ? 'true' : 'false'}
       data-key={illustrationKey}
+      data-real={art?.object || art?.still ? 'true' : undefined}
     >
       {art ? (
         <Scene bg={art.bg} shadow={art.shadow !== false}>
-          {art.draw()}
+          {art.object ? <g className="mv">{art.draw()}</g> : art.draw()}
         </Scene>
       ) : (
         <Missing />

@@ -1,6 +1,6 @@
-# Entdeckerzeit – Waldgeheimnisse entdecken
+# Wald-Spiel – Draußen spielen. Gemeinsam staunen.
 
-Kleine Entdeckermissionen für Waldspaziergänge mit Kindern von 2 bis 10 Jahren. Erwachsene wählen das Alter, die App stellt eine **Waldmission** aus ein bis fünf konkreten Aufgaben zusammen („Finde eine Eichel mit einem Hütchen“, „Entdecke einen Zapfen, an dem viele Schuppen fehlen“). Sind alle Aufgaben vollständig gefunden, gibt es kurz Konfetti und ein **Waldgeschenk**: eine kleine, sachlich geprüfte Naturgeschichte. Es gibt nur den Wald, keine Ortsauswahl. Alles läuft lokal im Browser: kein Backend, kein Login, kein Standort, keine externen Bilder oder Schriften. *Entdeckerzeit* ist ein Arbeitstitel, seine Verfügbarkeit wurde nicht geprüft.
+Kleine Entdeckermissionen für Waldspaziergänge mit Kindern von 2 bis 10 Jahren. Erwachsene wählen das Alter, die App stellt eine **Waldmission** aus ein bis fünf konkreten Aufgaben zusammen („Finde eine Eichel mit einem Hütchen“, „Entdecke einen Zapfen, an dem viele Schuppen fehlen“). Sind alle Aufgaben vollständig gefunden, gibt es kurz Konfetti und ein **Waldgeschenk**: eine kleine, sachlich geprüfte Naturgeschichte. Es gibt nur den Wald, keine Ortsauswahl. Alles läuft lokal im Browser: kein Backend, kein Login, kein Standort, keine externen Bilder oder Schriften. Die sichtbare Marke ist **Wald-Spiel** (früher *Entdeckerzeit*). Technische Namen (Speicherschlüssel entdeckerzeit:v1:*, Cache-Präfix, Projektordner) bleiben unverändert, damit gespeicherte Runden und Installationen nicht verloren gehen.
 
 ## Stack
 
@@ -15,6 +15,7 @@ npm run build          # Typprüfung + Produktionsbuild nach dist/
 npm run preview        # Produktionsbuild auf http://127.0.0.1:4173
 npm test               # Katalog-, Generator-, Geschenk-, Speicher-, Bild-, Hintergrund- und Kontrasttests
 npm run docs:generate  # docs/KATALOGABDECKUNG, ZIEHVERTEILUNG, BILDZUORDNUNG, OBJEKTINFOS, WALDGESCHENKE neu schreiben
+npm run images:render  # alle Suchbilder als PNG und Vorher/Nachher-Blatt nach docs/vergleich (Vorlage: docs/vergleich/vorher)
 npm run images:forest  # Hintergrund „Lichter Waldweg“ neu zeichnen und exportieren
 ```
 

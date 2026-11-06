@@ -64,13 +64,18 @@ describe('Kontrast auf dem Waldhintergrund (ungünstigster Fall: der Hintergrund
   const overBlack = (rgb: [number, number, number], alpha: number) =>
     '#' + rgb.map((c) => Math.round(c * alpha).toString(16).padStart(2, '0')).join('');
 
-  it('Titel, Einleitung und Kicker der Starttafel sind auch im ungünstigsten Fall lesbar', () => {
-    const m = css.match(/\.hero-forest \{ background: rgba\((\d+), (\d+), (\d+), ([0-9.]+)\)/);
-    expect(m, 'Starttafel in app.css gefunden').not.toBeNull();
-    const panel = overBlack([Number(m![1]), Number(m![2]), Number(m![3])], Number(m![4]));
-    expect(ratio('forest', panel), 'Titel').toBeGreaterThanOrEqual(4.5);
-    expect(ratio('#3f4f44', panel), 'Einleitung').toBeGreaterThanOrEqual(4.5);
-    expect(ratio('#5d6b2f', panel), 'Kicker').toBeGreaterThanOrEqual(4.5);
+  it('Marke, Titel und Einleitung der Starttafel sind auch im ungünstigsten Fall lesbar (beide Verlaufsfarben)', () => {
+    const block = css.match(/\.hero-forest \{[^}]*?background: linear-gradient\(180deg, rgba\((\d+), (\d+), (\d+), ([0-9.]+)\) 0%, rgba\((\d+), (\d+), (\d+), ([0-9.]+)\) 100%\)/);
+    expect(block, 'Starttafel in app.css gefunden').not.toBeNull();
+    const panels = [
+      overBlack([Number(block![1]), Number(block![2]), Number(block![3])], Number(block![4])),
+      overBlack([Number(block![5]), Number(block![6]), Number(block![7])], Number(block![8])),
+    ];
+    for (const panel of panels) {
+      expect(ratio('forest', panel), 'Titel und Wortmarke').toBeGreaterThanOrEqual(4.5);
+      expect(ratio('#3f4f44', panel), 'Einleitung').toBeGreaterThanOrEqual(4.5);
+      expect(ratio('#4a5c50', panel), 'Markenbegleiter').toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it('die Spielansicht legt eine helle, fast deckende Fläche über das Foto', () => {

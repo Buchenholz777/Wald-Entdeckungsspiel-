@@ -22,7 +22,17 @@ WebP wird bevorzugt, JPEG ist der Rückfall (`<picture>`). Die Dateien werden mi
 
 ## Gegenstandsbilder
 
-Alle Suchmotive (Eichel, Eichelhütchen, Buchecker, Hülle, Nussschale, Zapfen, Nadelzweig, Knospe, Blätter, Moos, Farn, Flechte, Pilze, Spuren …) sind eigene SVG-Zeichnungen aus diesem Projekt (`src/illustrations/`), ohne fremde Vorlagen oder Fotos. Sie sind naturgetreu gedacht und als „So kann es aussehen“ gekennzeichnet, nicht als Bestimmungsabbildung.
+Alle 30 Suchmotive (Eichel, Eichelhütchen, Buchecker, Hülle, Nussschale, Zapfen, Nadelzweig, Knospe, Blätter, Moos, Farn, Flechte, Pilze, Spuren …) sind **eigene naturgetreue Zeichnungen aus Code** (SVG mit Verläufen und Lichtfiltern), erstellt für dieses Projekt:
+
+| Angabe | Wert |
+|---|---|
+| Quellen | `src/illustrations/real-kit.tsx` (Baukasten), `real-frucht.tsx`, `real-blatt.tsx`, `real-boden.tsx`; Filter und Untergründe in `kit.tsx` |
+| Vorlagen | keine fremden Bilder, Fotos oder Vektorvorlagen; die Formen entstehen aus Formeln und festen Zufallswerten |
+| Rechte | eigene Erstellung, keine Lizenzpflichten, keine Wasserzeichen, keine Hotlinks, kein Bilderzeugungs-Dienst zur Laufzeit |
+| Auslieferung | Die Bilder stecken im JavaScript-Paket und stehen damit im Offline-Cache (kein einzelner Bildfund kann fehlen); sie sind beliebig scharf skalierbar (auch in der Vergrößerung) |
+| Frühere Fassung | die Bilderbuch-Zeichnungen in `forest.tsx` u. a. bleiben nur für ausgemusterte Vorlagen alter Runden im Code; für die 30 aktiven Motive werden sie überschrieben |
+
+Die Bilder sind ein **Beispiel** („So kann es aussehen“), keine Bestimmungsabbildung und keine Prüfung des Fundes. Welche Art das Beispiel zeigt und welche Grenzen es gibt, steht je Motiv in `docs/BILDBEWERTUNG.md`. Vergleich mit der früheren Fassung: `docs/vergleich/`.
 
 ## Geschenkbilder
 

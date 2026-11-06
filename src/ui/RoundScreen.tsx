@@ -8,6 +8,7 @@ import { Confetti, canCelebrateWithMotion } from './Confetti';
 import { GiftCard } from './GiftCard';
 import type { RoundTask } from '../domain/types';
 import { Illustration } from '../illustrations/Illustration';
+import { isStillArt } from '../illustrations/registry';
 import { IconArrow, IconCheck, IconChevron, IconHelp, IconInfo, IconMenu, IconReplay, IconSkip, IconSound, IconUndo, IconZoom } from './icons';
 import { Modal } from './Modal';
 import type { Game } from './useGame';
@@ -44,6 +45,7 @@ export function RoundScreen({ game, go }: Props) {
   const round = game.round!;
   const { actions: A } = game;
   const task = round.tasks[round.activeIndex] ?? round.tasks[0];
+  const still = isStillArt(task.image.illustrationKey);
   const prog = progress(round);
 
   const [play, setPlay] = useState(true);
@@ -214,9 +216,11 @@ export function RoundScreen({ game, go }: Props) {
           <button type="button" className="icon-btn info-btn" onClick={() => setDialog('info')} aria-label={`Info zu: ${subject(task)}`}>
             <IconInfo />
           </button>
-          <button type="button" className="icon-btn replay-btn" onClick={replay} aria-label="Bewegung noch einmal ansehen">
-            <IconReplay />
-          </button>
+          {!still && (
+            <button type="button" className="icon-btn replay-btn" onClick={replay} aria-label="Bewegung noch einmal ansehen">
+              <IconReplay />
+            </button>
+          )}
           {showCheck && (
             <span className="done-badge" aria-hidden="true">
               <IconCheck size={30} />
@@ -366,9 +370,11 @@ export function RoundScreen({ game, go }: Props) {
           <p className="muted">Euer Fund darf anders aussehen. Das Bild ist nur ein Beispiel.</p>
         </section>
         <div className="modal-actions">
-          <button type="button" className="btn btn-secondary" onClick={replay}>
-            <IconReplay /> Bewegung noch einmal
-          </button>
+          {!still && (
+            <button type="button" className="btn btn-secondary" onClick={replay}>
+              <IconReplay /> Bewegung noch einmal
+            </button>
+          )}
           <button type="button" className="btn btn-primary" onClick={close}>
             Fertig
           </button>
@@ -441,7 +447,7 @@ export function RoundScreen({ game, go }: Props) {
             <li>
               <button type="button" className="menu-item" onClick={() => { setDialog(null); go('/hilfe'); }}>
                 <span>Hilfe</span>
-                <span className="muted block">So funktioniert Entdeckerzeit</span>
+                <span className="muted block">So funktioniert Wald-Spiel</span>
               </button>
             </li>
             <li>

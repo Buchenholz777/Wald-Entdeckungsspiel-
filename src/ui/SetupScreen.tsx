@@ -3,7 +3,9 @@ import { gifts, giftsById, type Gift } from '../catalog/gifts';
 import { AGE_LABEL, AGE_SUBLINE, CONTEXT_BY_ENV, CONTEXT_LABEL, DEFAULT_TASK_COUNT, SEASON_LABEL } from '../domain/meta';
 import { progress } from '../domain/round';
 import { AGE_GROUPS, FOREST, SEASONS, type AgeGroup } from '../domain/types';
+import { Illustration } from '../illustrations/Illustration';
 import { SeasonGlyph } from '../illustrations/scenes';
+import { Wordmark } from './Brand';
 import { GiftCard } from './GiftCard';
 import type { Game } from './useGame';
 import { IconArrow, IconChevron, IconHelp } from './icons';
@@ -20,6 +22,7 @@ interface Props {
 }
 
 const contextOptions = CONTEXT_BY_ENV[FOREST];
+const HERO_FINDS = ['acorn', 'cone', 'maple-leaf'];
 
 export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
   const { draft, patchDraft, round, archive } = game;
@@ -74,16 +77,28 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
   return (
     <div className="screen setup">
       <header className="hero hero-forest">
-        <p className="hero-kicker">Entdeckerzeit</p>
+        <div className="hero-brand">
+          <Wordmark size="lg" tagline />
+          {/* Drei Dinge, die im Spiel wirklich vorkommen: reine Zierde, deshalb ohne Bildbeschreibung */}
+          <ul className="hero-finds" aria-hidden="true">
+            {HERO_FINDS.map((key) => (
+              <li key={key}>
+                <Illustration illustrationKey={key} preset="settle" />
+              </li>
+            ))}
+          </ul>
+        </div>
         <h1 className="h1" tabIndex={-1} data-focus-target>
-          Waldgeheimnisse entdecken
+          <span className="h1-line">Der Wald steckt voller Wunder.</span> <span className="h1-line">Entdeckt sie zusammen!</span>
         </h1>
-        <p className="lead">Im Wald warten kleine Geheimnisse auf euch. Wollt ihr sie gemeinsam finden? Anschauen und Zeigen genügt.</p>
+        <p className="lead">
+          Zapfen, Waldfrüchte und kleine Spuren: Geht gemeinsam auf Entdeckermission und erfahrt, welche Geheimnisse im Wald stecken. Wählt das Alter eures Kindes – und los geht’s!
+        </p>
       </header>
 
       {pwa.updateWaiting && (
         <div className="notice" role="status">
-          <p>Eine neue Version von Entdeckerzeit ist bereit. Eure Waldmission bleibt dabei gespeichert.</p>
+          <p>Eine neue Version von Wald-Spiel ist bereit. Eure Waldmission bleibt dabei gespeichert.</p>
           <button type="button" className="btn btn-primary btn-compact" onClick={pwa.applyUpdate}>
             Jetzt aktualisieren
           </button>
@@ -92,7 +107,7 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
 
       {legacyLink && !legacyPending && (
         <div className="notice" role="status">
-          <p>Entdeckerzeit ist jetzt ein Wald-Spiel. Euer alter Link führt hierher, ins Hauptmenü.</p>
+          <p>Aus Entdeckerzeit ist Wald-Spiel geworden, und es spielt jetzt nur im Wald. Euer alter Link führt hierher, ins Hauptmenü.</p>
         </div>
       )}
 
@@ -107,7 +122,7 @@ export function SetupScreen({ game, go, pwa, legacyLink }: Props) {
 
       {legacyPending && (
         <div className="notice" role="status">
-          <p>Entdeckerzeit ist jetzt ein Wald-Spiel. Eure frühere Runde ist sicher gespeichert, ihr könnt sie ansehen. Starten könnt ihr eine neue Waldmission.</p>
+          <p>Aus Entdeckerzeit ist Wald-Spiel geworden, und es spielt jetzt nur im Wald. Eure frühere Runde ist sicher gespeichert, ihr könnt sie ansehen. Starten könnt ihr eine neue Waldmission.</p>
           <div className="notice-actions">
             <button type="button" className="btn btn-secondary btn-compact" onClick={() => setArchiveOpen(true)}>
               Frühere Runde ansehen

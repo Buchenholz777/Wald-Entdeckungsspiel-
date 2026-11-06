@@ -66,14 +66,17 @@ export const CONTEXT_BY_ENV: Record<Environment, ContextTag[]> = {
   water: [],
 };
 
-/** Leitmotive der Waldmissionen: Titel, Vorlesesatz und kurze Beschreibung. */
-export const THEME_INFO: Record<Theme, { title: string; line: string }> = {
-  growth: { title: 'Wie aus Kleinem ein Baum wird', line: 'Heute suchen wir Samen, Früchte und kleine Anfänge: Hier fängt vieles an, was später groß wird.' },
-  gnawed: { title: 'Wer hat hier geknabbert?', line: 'Heute suchen wir Spuren, die Tiere hinterlassen haben. Wer es war, könnt ihr nur vermuten.' },
-  water: { title: 'Das kleine Wald-Wasserwunder', line: 'Heute suchen wir Dinge, die Feuchtigkeit lieben und im Wald viel Wasser halten.' },
-  decay: { title: 'Aus Alt wird Neues', line: 'Heute suchen wir, wie im Wald aus Altem wieder Neues wird.' },
-  pattern: { title: 'Muster, die Geschichten erzählen', line: 'Heute suchen wir Muster im Wald. Jedes erzählt ein Stück Geschichte.' },
-  year: { title: 'Der Wald im Jahreslauf', line: 'Heute schauen wir, woran man die Jahreszeit im Wald erkennt.' },
+/**
+ * Leitmotive der Waldmissionen: Titel und Vorlesesatz (nur wenn jede Station passt) sowie `focus`,
+ * die Wendung für gemischte Missionen („Heute suchen wir vor allem …“).
+ */
+export const THEME_INFO: Record<Theme, { title: string; line: string; focus: string }> = {
+  growth: { title: 'Wie aus Kleinem ein Baum wird', line: 'Heute suchen wir Samen, Früchte und kleine Anfänge: Hier fängt vieles an, was später groß wird.', focus: 'Samen, Früchte und kleine Anfänge' },
+  gnawed: { title: 'Wer hat hier geknabbert?', line: 'Heute suchen wir Spuren, die Tiere hinterlassen haben. Wer es war, könnt ihr nur vermuten.', focus: 'Spuren, die Tiere hinterlassen haben' },
+  water: { title: 'Das kleine Wald-Wasserwunder', line: 'Heute suchen wir Dinge, die Feuchtigkeit lieben und im Wald viel Wasser halten.', focus: 'Dinge, die Feuchtigkeit lieben' },
+  decay: { title: 'Aus Alt wird Neues', line: 'Heute suchen wir, wie im Wald aus Altem wieder Neues wird.', focus: 'Zeichen dafür, wie aus Altem wieder Neues wird' },
+  pattern: { title: 'Muster, die Geschichten erzählen', line: 'Heute suchen wir Muster im Wald. Jedes erzählt ein Stück Geschichte.', focus: 'Muster im Wald' },
+  year: { title: 'Der Wald im Jahreslauf', line: 'Heute schauen wir, woran man die Jahreszeit im Wald erkennt.', focus: 'Zeichen der Jahreszeit' },
 };
 
 /** Einfacher Produktvorschlag nach lokalem Gerätemonat – keine Naturvorhersage. */

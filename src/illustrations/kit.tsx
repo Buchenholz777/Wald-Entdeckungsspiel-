@@ -51,7 +51,7 @@ export const C = {
   white: '#ffffff',
 };
 
-export type Bg = 'cream' | 'sky' | 'sand' | 'water' | 'green' | 'stone' | 'snow' | 'rose' | 'blue' | 'earth';
+export type Bg = 'cream' | 'sky' | 'sand' | 'water' | 'green' | 'stone' | 'snow' | 'rose' | 'blue' | 'earth' | 'litter' | 'leafy' | 'bark' | 'mud' | 'dusk' | 'soil';
 
 const BG: Record<Bg, [string, string]> = {
   cream: ['#fff7e4', '#f8ecc9'],
@@ -64,6 +64,13 @@ const BG: Record<Bg, [string, string]> = {
   rose: ['#fdeee6', '#f8dccb'],
   blue: ['#e9f0fb', '#d3e1f5'],
   earth: ['#f1e5d0', '#dfc9a3'],
+  // ruhige, naturnahe Untergründe der naturgetreuen Suchbilder (Waldboden, Moos, Rinde, Matsch, Dämmerlicht)
+  litter: ['#eadfc6', '#cdbb98'],
+  leafy: ['#dde6c8', '#b9cc9f'],
+  bark: ['#d6cbb6', '#b5a688'],
+  mud: ['#b39a76', '#8d7453'],
+  dusk: ['#3d5a48', '#1f362a'],
+  soil: ['#7a6046', '#4e3a28'],
 };
 
 /** Globale Definitionen für Verläufe und Papierstruktur. Einmal pro Dokument einbinden. */
@@ -94,6 +101,63 @@ export function SvgDefs() {
           <feTurbulence type="fractalNoise" baseFrequency="0.65 0.015" numOctaves="2" seed="5" result="n" />
           <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 2.4 -1.0" result="a" />
           <feComposite in="a" in2="SourceAlpha" operator="in" />
+        </filter>
+        {/* Naturgetreue Suchbilder: weiche Schatten, Oberflächenrelief durch Licht von links oben, unregelmäßige Kanten */}
+        <filter id="nx-b1" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1" /></filter>
+        <filter id="nx-b2" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur stdDeviation="2" /></filter>
+        <filter id="nx-b4" x="-40%" y="-80%" width="180%" height="260%"><feGaussianBlur stdDeviation="4" /></filter>
+        <filter id="nx-bump" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="3" seed="3" result="n" />
+          <feDiffuseLighting in="n" surfaceScale="1.7" diffuseConstant="1.18" lightingColor="#fff" result="l">
+            <feDistantLight azimuth="235" elevation="58" />
+          </feDiffuseLighting>
+          <feComposite in="l" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="m" />
+          <feComposite in="m" in2="SourceAlpha" operator="in" />
+        </filter>
+        <filter id="nx-bump-lg" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.11" numOctaves="3" seed="8" result="n" />
+          <feDiffuseLighting in="n" surfaceScale="4.2" diffuseConstant="1.22" lightingColor="#fff" result="l">
+            <feDistantLight azimuth="235" elevation="56" />
+          </feDiffuseLighting>
+          <feComposite in="l" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="m" />
+          <feComposite in="m" in2="SourceAlpha" operator="in" />
+        </filter>
+        <filter id="nx-bump-v" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.42 0.035" numOctaves="3" seed="4" result="n" />
+          <feDiffuseLighting in="n" surfaceScale="3.2" diffuseConstant="1.2" lightingColor="#fff" result="l">
+            <feDistantLight azimuth="200" elevation="55" />
+          </feDiffuseLighting>
+          <feComposite in="l" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="m" />
+          <feComposite in="m" in2="SourceAlpha" operator="in" />
+        </filter>
+        <filter id="nx-bump-velvet" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="9" result="n" />
+          <feDiffuseLighting in="n" surfaceScale="1.1" diffuseConstant="1.12" lightingColor="#fff" result="l">
+            <feDistantLight azimuth="235" elevation="62" />
+          </feDiffuseLighting>
+          <feComposite in="l" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="m" />
+          <feComposite in="m" in2="SourceAlpha" operator="in" />
+        </filter>
+        <filter id="nx-rough" x="-8%" y="-8%" width="116%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="6" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+        <filter id="nx-fuzz" x="-8%" y="-8%" width="116%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.35" numOctaves="2" seed="12" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+        <filter id="nx-lace" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="3" seed="21" result="n" />
+          <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 9 -4.1" result="a" />
+          <feComposite in="SourceGraphic" in2="a" operator="in" />
+        </filter>
+        <filter id="nx-dent" x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="1.8" result="b" />
+          <feDiffuseLighting in="b" surfaceScale="7" diffuseConstant="1.12" lightingColor="#fff" result="l">
+            <feDistantLight azimuth="235" elevation="48" />
+          </feDiffuseLighting>
+          <feComposite in="l" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="m" />
+          <feComposite in="m" in2="SourceAlpha" operator="in" />
         </filter>
         {(Object.keys(BG) as Bg[]).map((k) => (
           <linearGradient key={k} id={`il-bg-${k}`} x1="0" y1="0" x2="0" y2="1">
@@ -511,6 +575,10 @@ export interface Art {
   bg: Bg;
   draw: () => ReactNode;
   shadow?: boolean;
+  /** Naturgetreues, freistehendes Objekt: Die Bühne bewegt es als Ganzes, kurz und sanft (nie verzerrt). */
+  object?: boolean;
+  /** Naturgetreue Tafel (Rinde, Matsch, Netz): immer ruhiges Standbild, ohne Bewegung. */
+  still?: boolean;
 }
 
 /** Einfacher, deterministischer Zufall für gleichbleibende „zufällige“ Verteilungen (Kies, Blätter). */

@@ -1,4 +1,5 @@
 import { giftsById } from '../catalog/gifts';
+import { templates } from '../catalog/templates';
 import { FOREST, THEMES, type AgeGroup, type ContextTag, type Environment, type Round, type Settings, type Theme } from './types';
 
 /**
@@ -45,6 +46,8 @@ export const DEFAULT_SETTINGS: Settings = {
   legacyNoticePending: false,
   giftsReceived: [],
 };
+
+const templatesById = new Map(templates.map((t) => [t.id, t]));
 
 const AGES: AgeGroup[] = ['2-3', '4-6', '7-10'];
 const ENVS: Environment[] = ['forest', 'park', 'city', 'beach', 'meadow', 'garden', 'playground', 'mountain', 'water'];
@@ -105,6 +108,12 @@ export function sanitizeRound(raw: unknown): Round | null {
       : undefined;
   return {
     ...r,
+    // Bildangaben (Schlüssel, Beschreibung, Erkennungsmerkmale) kommen immer aus dem aktuellen Katalog: Eine vor einem Update
+    // gespeicherte Runde zeigt so das neue, naturgetreue Suchbild mit passender Beschreibung. Aufgaben, Zähler und Geschenk bleiben unberührt.
+    tasks: r.tasks.map((t) => {
+      const tpl = templatesById.get(t.templateId);
+      return tpl ? { ...t, image: tpl.image } : t;
+    }),
     context: Array.isArray(r.context) ? r.context.filter((c) => CONTEXTS.includes(c)) : [],
     excludedConcepts: Array.isArray(r.excludedConcepts) ? r.excludedConcepts.filter((c) => typeof c === 'string') : [],
     activeIndex,

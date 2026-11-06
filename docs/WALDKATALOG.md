@@ -1,6 +1,6 @@
 # Waldkatalog (Katalogstand 4.0.0)
 
-Entdeckerzeit kennt nur den Wald. Dieses Dokument beschreibt Zuschnitt, Auswahl, Prüfstand und Grenzen. Texte stehen vollständig in `OBJEKTINFOS.md` und `WALDGESCHENKE.md`, Zahlen in `KATALOGABDECKUNG.md` und `ZIEHVERTEILUNG.md`.
+Wald-Spiel (früher Entdeckerzeit) kennt nur den Wald. Dieses Dokument beschreibt Zuschnitt, Auswahl, Prüfstand und Grenzen. Texte stehen vollständig in `OBJEKTINFOS.md` und `WALDGESCHENKE.md`, Zahlen in `KATALOGABDECKUNG.md` und `ZIEHVERTEILUNG.md`.
 
 ## Was jetzt gesucht wird
 

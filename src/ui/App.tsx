@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SvgDefs } from '../illustrations/kit';
 import { ForestBackground } from './ForestBackground';
-import { Logo } from '../illustrations/scenes';
+import { Wordmark } from './Brand';
 import { IconHome } from './icons';
 import { usePwa } from '../pwa/status';
 import { Gallery } from './Gallery';
@@ -86,18 +86,16 @@ export function App() {
       <a className="skip-link" href="#main" onClick={(e) => { e.preventDefault(); main.current?.focus(); }}>
         Zum Inhalt
       </a>
-      <div className="app-bar">
-        <span className="brand">
-          <Logo size={26} />
-          <span className="brand-name">Entdeckerzeit</span>
-        </span>
-        {route !== '/' && (
+      {/* Im Hauptmenü trägt der Einstiegsbereich selbst die Marke; in Spiel, Hilfe und Fundsammlung steht sie klein in der Kopfleiste. */}
+      {!onMenu && (
+        <div className="app-bar">
+          <Wordmark size="sm" />
           <button type="button" className="btn btn-secondary home-btn" onClick={() => go('/')}>
             <IconHome /> Hauptmenü
           </button>
-        )}
-      </div>
-      <main id="main" ref={main} tabIndex={-1} className={`main route-${route.replace(/\W+/g, '-')}`}>
+        </div>
+      )}
+      <main id="main" ref={main} tabIndex={-1} className={`main route-${route.replace(/\W+/g, '-')}${onMenu ? ' is-entry' : ''}`}>
         {screen}
       </main>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">

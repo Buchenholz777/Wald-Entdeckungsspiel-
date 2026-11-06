@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createElement } from 'react';
 import { templates } from '../src/catalog/templates';
 import { Illustration } from '../src/illustrations/Illustration';
-import { artRegistry } from '../src/illustrations/registry';
+import { artRegistry, isStillArt } from '../src/illustrations/registry';
 import type { AnimationPreset } from '../src/domain/types';
 
 const PRESETS: AnimationPreset[] = ['float', 'sway', 'settle', 'grow', 'ripple', 'wave', 'bob', 'swing', 'flutter', 'draw'];
@@ -39,10 +39,40 @@ describe('Bildwelt', () => {
         createElement(Illustration, { illustrationKey: t.id, preset: t.image.animationPreset, play: true }),
       );
       const preset = t.image.animationPreset;
-      if (preset === 'ripple') expect(html, t.id).toMatch(/class="rip/);
+      if (isStillArt(t.image.illustrationKey)) {
+        // naturgetreue Tafeln (Rinde, Matsch, Netz): ruhiges Standbild, nichts wird bewegt oder verzogen
+        expect(html, t.id).not.toMatch(/class="(mv|rip|draw)/);
+      } else if (preset === 'ripple') expect(html, t.id).toMatch(/class="rip/);
       else if (preset === 'draw') expect(html, t.id).toMatch(/class="draw"|class="mv"/);
       else expect(html, t.id).toMatch(/class="mv/);
     }
+  });
+
+  it('alle aktiven Waldmotive sind naturgetreue Bilder (kein altes Bibliotheks-Icon), und Tafeln ohne Bewegung haben keinen Wiederholen-Knopf', () => {
+    for (const t of templates.filter((x) => !x.retired)) {
+      const art = artRegistry[t.image.illustrationKey];
+      expect(art.object === true || art.still === true, `${t.id} ist noch nicht naturgetreu`).toBe(true);
+      expect(isStillArt(t.image.illustrationKey)).toBe(art.still === true);
+    }
+    expect(['lichen', 'bracket-fungus', 'spider-web', 'animal-track', 'deer-track', 'dog-track'].every(isStillArt)).toBe(true);
+    expect(isStillArt('cone')).toBe(false);
+  });
+
+  it('ausgemusterte Vorlagen aus alten, gespeicherten Runden zeigen weiterhin ein Bild (kompatible Auflösung, kein fehlendes Suchbild)', () => {
+    for (const t of templates.filter((x) => x.retired)) {
+      const html = renderToStaticMarkup(createElement(Illustration, { illustrationKey: t.image.illustrationKey, preset: t.image.animationPreset }));
+      expect(html, t.id).not.toContain('stroke-dasharray="4 8"'); // das Platzhalterbild für unbekannte Schlüssel
+    }
+  });
+
+  it('Bildbeschreibungen widersprechen den neuen Bildern nicht (zum Beispiel keine Hülle neben der Kastanie, kein roter Fliegenpilz)', () => {
+    const alt = (id: string) => templates.find((t) => t.id === id)!.image.alt;
+    expect(alt('chestnut')).not.toMatch(/Hülle/);
+    expect(alt('beechnut')).not.toMatch(/Hülle/);
+    expect(alt('mushroom')).not.toMatch(/rot|weißen Punkten/);
+    expect(alt('lichen')).toMatch(/Rinde/);
+    expect(alt('bracket-fungus')).not.toMatch(/Zwei /);
+    expect(alt('acorn-cup')).toMatch(/Eichel ohne Hütchen/);
   });
 
   it('ähnliche Motive sind unterscheidbar angelegt (Ahorn/Eiche, Zapfen/Kastanie)', () => {

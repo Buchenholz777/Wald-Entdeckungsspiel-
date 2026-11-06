@@ -17,12 +17,13 @@ Je Kombination wurden 400 Missionen mit festen Seeds (1–400) erzeugt. Die Tabe
 
 | Missionstitel | Anteil |
 |---|---:|
-| Wie aus Kleinem ein Baum wird | 63 % |
-| Der Wald im Jahreslauf | 37 % |
+| Waldgeheimnisse entdecken | 63 % |
+| Wie aus Kleinem ein Baum wird | 27 % |
+| Der Wald im Jahreslauf | 11 % |
 
 Beispielmissionen (Seeds 1–3):
 
-- Seed 1: **Der Wald im Jahreslauf** – Entdecke einen Pilz mit Hut und Stiel. · Entdecke eine Haselnuss auf dem Boden. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen.
+- Seed 1: **Waldgeheimnisse entdecken** – Entdecke einen Pilz mit Hut und Stiel. · Entdecke eine Haselnuss auf dem Boden. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen.
 - Seed 2: **Der Wald im Jahreslauf** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Finde eine Eichel mit einem Hütchen. · Finde eine braune Buchecker mit drei Kanten.
 - Seed 3: **Der Wald im Jahreslauf** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Finde eine Eichel mit einem Hütchen. · Finde eine braune Buchecker mit drei Kanten.
 
@@ -43,12 +44,13 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Wie aus Kleinem ein Baum wird | 73 % |
-| Der Wald im Jahreslauf | 27 % |
+| Wie aus Kleinem ein Baum wird | 56 % |
+| Waldgeheimnisse entdecken | 27 % |
+| Der Wald im Jahreslauf | 17 % |
 
 Beispielmissionen (Seeds 1–3):
 
-- Seed 1: **Der Wald im Jahreslauf** – Entdecke einen Pilz mit Hut und Stiel. · Entdecke eine Haselnuss auf dem Boden. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen.
+- Seed 1: **Waldgeheimnisse entdecken** – Entdecke einen Pilz mit Hut und Stiel. · Entdecke eine Haselnuss auf dem Boden. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen.
 - Seed 2: **Der Wald im Jahreslauf** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Finde eine Eichel mit einem Hütchen. · Finde eine braune Buchecker mit drei Kanten.
 - Seed 3: **Der Wald im Jahreslauf** – Finde eine braune Kastanie auf dem Boden. · Finde eine braune Buchecker mit drei Kanten. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen.
 
@@ -63,13 +65,14 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Wie aus Kleinem ein Baum wird | 100 % |
+| Waldgeheimnisse entdecken | 58 % |
+| Wie aus Kleinem ein Baum wird | 42 % |
 
 Beispielmissionen (Seeds 1–3):
 
-- Seed 1: **Wie aus Kleinem ein Baum wird** – Entdecke ein grünes Moospolster wie ein kleines Kissen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke einen Zapfen mit vielen Schuppen.
+- Seed 1: **Waldgeheimnisse entdecken** – Entdecke ein grünes Moospolster wie ein kleines Kissen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke einen Zapfen mit vielen Schuppen.
 - Seed 2: **Wie aus Kleinem ein Baum wird** – Entdecke einen Zapfen mit vielen Schuppen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Finde eine Eichel mit einem Hütchen.
-- Seed 3: **Wie aus Kleinem ein Baum wird** – Entdecke ein grünes Moospolster wie ein kleines Kissen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke einen Zapfen mit vielen Schuppen.
+- Seed 3: **Waldgeheimnisse entdecken** – Entdecke ein grünes Moospolster wie ein kleines Kissen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke einen Zapfen mit vielen Schuppen.
 
 ## 2-3 Jahre · Frühling · Farn vorhanden
 
@@ -83,15 +86,15 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Das kleine Wald-Wasserwunder | 56 % |
-| Wie aus Kleinem ein Baum wird | 38 % |
+| Waldgeheimnisse entdecken | 88 % |
+| Das kleine Wald-Wasserwunder | 7 % |
 | Muster, die Geschichten erzählen | 6 % |
 
 Beispielmissionen (Seeds 1–3):
 
 - Seed 1: **Muster, die Geschichten erzählen** – Entdecke einen Zapfen mit vielen Schuppen. · Entdecke ein Spinnennetz. · Entdecke ein Farnblatt mit vielen kleinen Seitenblättern.
-- Seed 2: **Wie aus Kleinem ein Baum wird** – Entdecke einen Zapfen mit vielen Schuppen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein Spinnennetz.
-- Seed 3: **Das kleine Wald-Wasserwunder** – Entdecke ein grünes Moospolster wie ein kleines Kissen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein Farnblatt mit vielen kleinen Seitenblättern.
+- Seed 2: **Waldgeheimnisse entdecken** – Entdecke einen Zapfen mit vielen Schuppen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein Spinnennetz.
+- Seed 3: **Waldgeheimnisse entdecken** – Entdecke ein grünes Moospolster wie ein kleines Kissen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein Farnblatt mit vielen kleinen Seitenblättern.
 
 ## 4-6 Jahre · Herbst · Nadelbäume vorhanden, Rosskastanie vorhanden, Eiche vorhanden, Haselstrauch vorhanden, Buche vorhanden
 
@@ -119,16 +122,14 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Wie aus Kleinem ein Baum wird | 33 % |
-| Aus Alt wird Neues | 28 % |
-| Der Wald im Jahreslauf | 24 % |
-| Muster, die Geschichten erzählen | 16 % |
+| Waldgeheimnisse entdecken | 99 % |
+| Aus Alt wird Neues | 1 % |
 
 Beispielmissionen (Seeds 1–3):
 
-- Seed 1: **Aus Alt wird Neues** – Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Finde ein gefallenes Eichenblatt wie dieses. · Entdecke einen Pilz, der seitlich am Holz wächst.
-- Seed 2: **Der Wald im Jahreslauf** – Entdecke eine aufgeplatzte, stachelige Fruchthülle. · Entdecke eine lange spitze Knospe wie im Bild. · Entdecke 2 Haselnüsse auf dem Boden. · Finde ein gefallenes Eichenblatt wie dieses. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist.
-- Seed 3: **Der Wald im Jahreslauf** – Finde ein gefallenes Eichenblatt wie dieses. · Finde 2 braune Kastanien auf dem Boden. · Finde eine Nussschale mit einer Öffnung. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke eine lange spitze Knospe wie im Bild.
+- Seed 1: **Waldgeheimnisse entdecken** – Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Finde ein gefallenes Eichenblatt wie dieses. · Entdecke einen Pilz, der seitlich am Holz wächst.
+- Seed 2: **Waldgeheimnisse entdecken** – Entdecke eine aufgeplatzte, stachelige Fruchthülle. · Entdecke eine lange spitze Knospe wie im Bild. · Entdecke 2 Haselnüsse auf dem Boden. · Finde ein gefallenes Eichenblatt wie dieses. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist.
+- Seed 3: **Waldgeheimnisse entdecken** – Finde ein gefallenes Eichenblatt wie dieses. · Finde 2 braune Kastanien auf dem Boden. · Finde eine Nussschale mit einer Öffnung. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke eine lange spitze Knospe wie im Bild.
 
 ## 4-6 Jahre · Frühling · Weicher Boden oder Matsch, Farn vorhanden
 
@@ -149,14 +150,14 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Muster, die Geschichten erzählen | 98 % |
-| Das kleine Wald-Wasserwunder | 2 % |
+| Waldgeheimnisse entdecken | 98 % |
+| Muster, die Geschichten erzählen | 2 % |
 
 Beispielmissionen (Seeds 1–3):
 
-- Seed 1: **Muster, die Geschichten erzählen** – Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein Spinnennetz. · Entdecke einen Zapfen mit vielen Schuppen. · Entdecke einen Pilz, der seitlich am Holz wächst.
-- Seed 2: **Muster, die Geschichten erzählen** – Entdecke eine Flechte mit solchen kleinen Lappen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Entdecke einen Zapfen mit vielen Schuppen. · Finde ein Blatt mit einem Loch.
-- Seed 3: **Muster, die Geschichten erzählen** – Entdecke eine lange spitze Knospe wie im Bild. · Entdecke 3 Zapfen mit vielen Schuppen. · Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke ein Spinnennetz.
+- Seed 1: **Waldgeheimnisse entdecken** – Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein Spinnennetz. · Entdecke einen Zapfen mit vielen Schuppen. · Entdecke einen Pilz, der seitlich am Holz wächst.
+- Seed 2: **Waldgeheimnisse entdecken** – Entdecke eine Flechte mit solchen kleinen Lappen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Entdecke einen Zapfen mit vielen Schuppen. · Finde ein Blatt mit einem Loch.
+- Seed 3: **Waldgeheimnisse entdecken** – Entdecke eine lange spitze Knospe wie im Bild. · Entdecke 3 Zapfen mit vielen Schuppen. · Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke ein Spinnennetz.
 
 ## 4-6 Jahre · Sommer · ohne Zusatzangaben
 
@@ -174,16 +175,13 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Waldgeheimnisse entdecken | 47 % |
-| Das kleine Wald-Wasserwunder | 34 % |
-| Aus Alt wird Neues | 18 % |
-| Muster, die Geschichten erzählen | 2 % |
+| Waldgeheimnisse entdecken | 100 % |
 
 Beispielmissionen (Seeds 1–3):
 
-- Seed 1: **Aus Alt wird Neues** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke einen Zapfen, an dem viele Schuppen fehlen. · Entdecke einen Pilz mit Hut und Stiel. · Entdecke ein grünes Moospolster wie ein kleines Kissen.
+- Seed 1: **Waldgeheimnisse entdecken** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke einen Zapfen, an dem viele Schuppen fehlen. · Entdecke einen Pilz mit Hut und Stiel. · Entdecke ein grünes Moospolster wie ein kleines Kissen.
 - Seed 2: **Waldgeheimnisse entdecken** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke einen Pilz, der seitlich am Holz wächst. · Finde ein Blatt mit einem Loch. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein grünes Moospolster wie ein kleines Kissen.
-- Seed 3: **Das kleine Wald-Wasserwunder** – Entdecke einen Pilz mit Hut und Stiel. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Finde ein Blatt mit einem Loch. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein Spinnennetz.
+- Seed 3: **Waldgeheimnisse entdecken** – Entdecke einen Pilz mit Hut und Stiel. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Finde ein Blatt mit einem Loch. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein Spinnennetz.
 
 ## 4-6 Jahre · Winter · ohne Zusatzangaben
 
@@ -204,14 +202,14 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Wie aus Kleinem ein Baum wird | 53 % |
-| Aus Alt wird Neues | 47 % |
+| Waldgeheimnisse entdecken | 97 % |
+| Aus Alt wird Neues | 3 % |
 
 Beispielmissionen (Seeds 1–3):
 
-- Seed 1: **Aus Alt wird Neues** – Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine leere Hülle, die sich in vier Teile geöffnet hat. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist.
-- Seed 2: **Aus Alt wird Neues** – Entdecke eine leere Hülle, die sich in vier Teile geöffnet hat. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Entdecke ein grünes Moospolster wie ein kleines Kissen.
-- Seed 3: **Aus Alt wird Neues** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine lange spitze Knospe wie im Bild.
+- Seed 1: **Waldgeheimnisse entdecken** – Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine leere Hülle, die sich in vier Teile geöffnet hat. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist.
+- Seed 2: **Waldgeheimnisse entdecken** – Entdecke eine leere Hülle, die sich in vier Teile geöffnet hat. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Entdecke ein grünes Moospolster wie ein kleines Kissen.
+- Seed 3: **Waldgeheimnisse entdecken** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine lange spitze Knospe wie im Bild.
 
 ## 7-10 Jahre · Herbst · Nadelbäume vorhanden, Ahorn vorhanden, Eiche vorhanden, Haselstrauch vorhanden, Buche vorhanden, Weicher Boden oder Matsch
 
@@ -241,17 +239,15 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Aus Alt wird Neues | 27 % |
-| Wer hat hier geknabbert? | 20 % |
-| Der Wald im Jahreslauf | 19 % |
-| Wie aus Kleinem ein Baum wird | 18 % |
-| Muster, die Geschichten erzählen | 16 % |
+| Waldgeheimnisse entdecken | 96 % |
+| Aus Alt wird Neues | 3 % |
+| Muster, die Geschichten erzählen | 1 % |
 
 Beispielmissionen (Seeds 1–3):
 
-- Seed 1: **Aus Alt wird Neues** – Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine kleine runde Galle an einem Blatt. · Entdecke einen Pilz mit Hut und Stiel. · Finde ein gefallenes Eichenblatt wie dieses. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist.
-- Seed 2: **Der Wald im Jahreslauf** – Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke eine lange spitze Knospe wie im Bild. · Finde eine braune Buchecker mit drei Kanten. · Entdecke 2 gefallene Blätter mit dieser Handform. · Entdecke einen Pilz, der seitlich am Holz wächst.
-- Seed 3: **Der Wald im Jahreslauf** – Finde ein gefallenes Eichenblatt wie dieses. · Finde 3 Eicheln mit Hütchen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine lange spitze Knospe wie im Bild.
+- Seed 1: **Waldgeheimnisse entdecken** – Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine kleine runde Galle an einem Blatt. · Entdecke einen Pilz mit Hut und Stiel. · Finde ein gefallenes Eichenblatt wie dieses. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist.
+- Seed 2: **Waldgeheimnisse entdecken** – Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke eine lange spitze Knospe wie im Bild. · Finde eine braune Buchecker mit drei Kanten. · Entdecke 2 gefallene Blätter mit dieser Handform. · Entdecke einen Pilz, der seitlich am Holz wächst.
+- Seed 3: **Waldgeheimnisse entdecken** – Finde ein gefallenes Eichenblatt wie dieses. · Finde 3 Eicheln mit Hütchen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine lange spitze Knospe wie im Bild.
 
 ## 7-10 Jahre · Sommer · Farn vorhanden, Eiche vorhanden
 
@@ -272,14 +268,14 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Muster, die Geschichten erzählen | 60 % |
-| Das kleine Wald-Wasserwunder | 40 % |
+| Waldgeheimnisse entdecken | 94 % |
+| Muster, die Geschichten erzählen | 6 % |
 
 Beispielmissionen (Seeds 1–3):
 
-- Seed 1: **Muster, die Geschichten erzählen** – Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Entdecke eine kleine runde Galle an einem Blatt. · Entdecke eine Flechte mit solchen kleinen Lappen. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen.
-- Seed 2: **Muster, die Geschichten erzählen** – Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Entdecke ein Spinnennetz. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke 2 Zapfen mit vielen Schuppen. · Finde ein Blatt mit einem Loch.
-- Seed 3: **Muster, die Geschichten erzählen** – Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Entdecke einen Pilz, der seitlich am Holz wächst. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein Blatt mit einer solchen hellen Spur.
+- Seed 1: **Waldgeheimnisse entdecken** – Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Entdecke eine kleine runde Galle an einem Blatt. · Entdecke eine Flechte mit solchen kleinen Lappen. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen.
+- Seed 2: **Waldgeheimnisse entdecken** – Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Entdecke ein Spinnennetz. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke 2 Zapfen mit vielen Schuppen. · Finde ein Blatt mit einem Loch.
+- Seed 3: **Waldgeheimnisse entdecken** – Entdecke ein Farnblatt mit vielen kleinen Seitenblättern. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Entdecke einen Pilz, der seitlich am Holz wächst. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein Blatt mit einer solchen hellen Spur.
 
 ## 7-10 Jahre · Winter · Nadelbäume vorhanden, Haselstrauch vorhanden, Buche vorhanden
 
@@ -300,14 +296,14 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Wie aus Kleinem ein Baum wird | 61 % |
-| Aus Alt wird Neues | 39 % |
+| Waldgeheimnisse entdecken | 100 % |
+| Aus Alt wird Neues | 1 % |
 
 Beispielmissionen (Seeds 1–3):
 
-- Seed 1: **Aus Alt wird Neues** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke eine leere Hülle, die sich in vier Teile geöffnet hat. · Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist.
-- Seed 2: **Wie aus Kleinem ein Baum wird** – Entdecke eine leere Hülle, die sich in vier Teile geöffnet hat. · Entdecke eine lange spitze Knospe wie im Bild. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist.
-- Seed 3: **Aus Alt wird Neues** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein einzelnes Eichelhütchen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine lange spitze Knospe wie im Bild.
+- Seed 1: **Waldgeheimnisse entdecken** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke eine leere Hülle, die sich in vier Teile geöffnet hat. · Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine Flechte mit solchen kleinen Lappen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist.
+- Seed 2: **Waldgeheimnisse entdecken** – Entdecke eine leere Hülle, die sich in vier Teile geöffnet hat. · Entdecke eine lange spitze Knospe wie im Bild. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist.
+- Seed 3: **Waldgeheimnisse entdecken** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke ein einzelnes Eichelhütchen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine lange spitze Knospe wie im Bild.
 
 ## 7-10 Jahre · Frühling · ohne Zusatzangaben
 
@@ -326,14 +322,10 @@ Beispielmissionen (Seeds 1–3):
 
 | Missionstitel | Anteil |
 |---|---:|
-| Waldgeheimnisse entdecken | 55 % |
-| Muster, die Geschichten erzählen | 13 % |
-| Aus Alt wird Neues | 13 % |
-| Wie aus Kleinem ein Baum wird | 12 % |
-| Das kleine Wald-Wasserwunder | 7 % |
+| Waldgeheimnisse entdecken | 100 % |
 
 Beispielmissionen (Seeds 1–3):
 
 - Seed 1: **Waldgeheimnisse entdecken** – Finde ein Blatt mit einem Loch. · Entdecke einen Pilz, der seitlich am Holz wächst. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Vergleiche einen länglichen und einen rundlicheren Zapfen. · Entdecke ein Spinnennetz.
-- Seed 2: **Wie aus Kleinem ein Baum wird** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke eine lange spitze Knospe wie im Bild. · Entdecke 2 Zapfen mit vielen Schuppen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Finde ein Blatt mit einem Loch.
-- Seed 3: **Aus Alt wird Neues** – Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine lange spitze Knospe wie im Bild. · Finde ein Blatt mit einem Loch. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen.
+- Seed 2: **Waldgeheimnisse entdecken** – Finde einen kleinen Zweig, an dem noch Nadeln sitzen. · Entdecke eine lange spitze Knospe wie im Bild. · Entdecke 2 Zapfen mit vielen Schuppen. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Finde ein Blatt mit einem Loch.
+- Seed 3: **Waldgeheimnisse entdecken** – Entdecke einen Pilz, der seitlich am Holz wächst. · Entdecke eine lange spitze Knospe wie im Bild. · Finde ein Blatt mit einem Loch. · Entdecke ein Blatt, von dem fast nur das feine Netz übrig ist. · Finde einen kleinen Zweig, an dem noch Nadeln sitzen.

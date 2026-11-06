@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { templates } from '../src/catalog/templates';
 import { generateRound } from '../src/domain/generator';
-import { buildMission } from '../src/domain/mission';
+import { buildMission, connectionLine } from '../src/domain/mission';
 import { infoWordCount, resolveInfo } from '../src/domain/resolve';
 import { seededRng } from '../src/domain/rng';
 import { AGE_GROUPS, SEASONS, type AgeGroup, type Theme } from '../src/domain/types';
@@ -115,12 +115,35 @@ describe('Mission: Titel und Einleitung passen zu den tatsächlichen Aufgaben', 
     }
   });
 
-  it('Titelregeln: ein Leitmotiv steht nur im Titel, wenn mindestens zwei Stationen und die Hälfte dazu passen', () => {
+  it('Titelregeln: ein Leitmotiv steht nur im Titel, wenn mindestens zwei Stationen vorliegen und jede dazu passt', () => {
     const mk = (templateId: string) => ({ templateId, prompt: 'x' }) as never;
     const themes = (id: string): Theme[] => (id === 'a' || id === 'b' ? ['pattern'] : id === 'c' ? ['water'] : []);
     expect(buildMission('4-6', [mk('a'), mk('b')], themes).title).toBe('Muster, die Geschichten erzählen');
     expect(buildMission('4-6', [mk('a'), mk('c')], themes).title).toBe('Waldgeheimnisse entdecken');
     expect(buildMission('4-6', [mk('a'), mk('b'), mk('c'), mk('c'), mk('d')], themes).title).toBe('Waldgeheimnisse entdecken');
     expect(buildMission('4-6', [mk('a')], themes).title).toBe('Waldgeheimnisse entdecken');
+  });
+
+  it('gemischte Mission: allgemeiner Titel, ehrliche Einleitung; Pilz unter „Wie aus Kleinem ein Baum wird“ ist ausgeschlossen', () => {
+    const mk = (templateId: string) => ({ templateId, prompt: 'Entdecke einen Pilz.' }) as never;
+    // zwei Samen/Früchte und ein Pilz: mehrheitlich Wachstum, aber nicht jede Station
+    const themes = (id: string): Theme[] => (id === 'acorn' || id === 'cone' ? ['growth'] : id === 'fungus' ? ['decay'] : []);
+    const mixed = buildMission('4-6', [mk('fungus'), mk('acorn'), mk('cone')], themes);
+    expect(mixed.title).toBe('Waldgeheimnisse entdecken');
+    expect(mixed.title).not.toBe('Wie aus Kleinem ein Baum wird');
+    expect(mixed.intro).toContain('vor allem Samen, Früchte und kleine Anfänge');
+    expect(mixed.intro).toContain('dazu noch ein paar andere Waldgeheimnisse');
+    expect(mixed.intro).toContain('Entdecke einen Pilz.');
+    const pure = buildMission('4-6', [mk('acorn'), mk('cone')], themes);
+    expect(pure.title).toBe('Wie aus Kleinem ein Baum wird');
+    expect(pure.intro).not.toContain('andere Waldgeheimnisse');
+  });
+
+  it('der Zusammenhang in der Fundsammlung wird nur genannt, wenn er für alle Funde stimmt', () => {
+    const mk = (templateId: string) => ({ templateId }) as never;
+    const themes = (id: string): Theme[] => (id === 'acorn' || id === 'cone' ? ['growth'] : id === 'fungus' ? ['decay'] : []);
+    expect(connectionLine([mk('acorn'), mk('cone')], themes)).toMatch(/Samen, Früchte/);
+    expect(connectionLine([mk('acorn'), mk('cone'), mk('fungus')], themes)).toBeUndefined();
+    expect(connectionLine([mk('acorn')], themes)).toBeUndefined();
   });
 });

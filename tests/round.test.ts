@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateRound } from '../src/domain/generator';
+import { artRegistry } from '../src/illustrations/registry';
 import { seededRng } from '../src/domain/rng';
 import {
   addFound,
@@ -169,6 +170,33 @@ describe('Speicherung', () => {
     expect(loaded.status).toBe('ok');
     expect(loaded.round).toEqual(sanitizeRound(JSON.parse(JSON.stringify(r))));
     expect(loaded.round!.tasks[0].info.whatIsIt).toBe(r.tasks[0].info.whatIsIt);
+  });
+
+  it('eine vor dem Bilder-Update gespeicherte Runde zeigt beim Fortsetzen die neuen Bildangaben, behält aber Aufgaben, Zähler und Geschenk', () => {
+    const store = memoryStore();
+    const p = createPersistence(store);
+    const r = generateRound({
+      age: '4-6', environment: 'forest', season: 'autumn', seasonSource: 'auto', context: ['chestnut', 'oak', 'conifers'], boost: false, count: 5, seed: 8, rng: seededRng(8),
+    }).round!;
+    // Zustand „vor dem Update“: alte Bildbeschreibung und fortgeschrittener Spielstand
+    const old = JSON.parse(JSON.stringify(r)) as Round;
+    old.tasks[0].image = { ...old.tasks[0].image, alt: 'Alte Beschreibung des früheren Bildes', recognitionFeatures: ['Altes Merkmal'] };
+    old.tasks[0].found = old.tasks[0].target;
+    old.tasks[0].status = 'done';
+    old.activeIndex = 1;
+    old.gift = { id: 'eichelhaeher', celebrated: false, at: 5 };
+    store.setItem(ROUND_KEY, JSON.stringify({ v: 1, savedAt: 1, round: old }));
+    const loaded = p.loadRound().round!;
+    const fresh = r.tasks[0].image;
+    expect(loaded.tasks[0].image.alt).toBe(fresh.alt);
+    expect(loaded.tasks[0].image.recognitionFeatures).toEqual(fresh.recognitionFeatures);
+    expect(loaded.tasks[0].image.illustrationKey).toBe(fresh.illustrationKey);
+    expect(loaded.tasks[0].status).toBe('done');
+    expect(loaded.tasks[0].found).toBe(old.tasks[0].target);
+    expect(loaded.activeIndex).toBe(1);
+    expect(loaded.tasks.map((t) => t.uid)).toEqual(r.tasks.map((t) => t.uid));
+    // Jede gespeicherte Aufgabe findet ein tatsächlich vorhandenes Suchbild
+    for (const t of loaded.tasks) expect(artRegistry[t.image.illustrationKey], t.templateId).toBeDefined();
   });
 
   it('beschädigter Speicher führt zu klarem Status statt Absturz und wird bereinigt', () => {

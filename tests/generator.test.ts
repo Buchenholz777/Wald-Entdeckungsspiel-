@@ -310,24 +310,41 @@ describe('Leitmotive und Missionstitel', () => {
     for (const t of templates.filter((x) => !x.retired)) expect(t.themes.length, t.id).toBeGreaterThan(0);
   });
 
-  it('Titel kommen aus der festen Liste und das Leitmotiv wird nur genannt, wenn mindestens die Hälfte der Stationen dazu passt', () => {
+  it('Titel kommen aus der festen Liste; der Leitmotiv-Titel steht nur, wenn JEDE Station dazu passt, sonst bleibt er allgemein', () => {
+    let pure = 0;
+    let mixed = 0;
     for (const season of SEASONS) {
       for (const age of AGE_GROUPS) {
         for (let seed = 1; seed <= 60; seed++) {
           const count = age === '2-3' ? 3 : 5;
           const r = generateRound(params({ season, age, seed, count, context: ALL_CONTEXT })).round!;
           expect(titles.has(r.mission!.title), r.mission!.title).toBe(true);
-          if (r.mission!.theme) {
-            const n = r.tasks.filter((t) => byId(t.templateId).themes.includes(r.mission!.theme as Theme)).length;
+          const theme = r.mission!.theme as Theme | undefined;
+          if (theme) {
+            const n = r.tasks.filter((t) => byId(t.templateId).themes.includes(theme)).length;
             expect(n, `${season}/${age}/${seed}`).toBeGreaterThanOrEqual(Math.max(2, Math.ceil(r.tasks.length / 2)));
-            expect(r.mission!.title).toBe(THEME_INFO[r.mission!.theme as Theme].title);
+            if (n === r.tasks.length) {
+              pure++;
+              expect(r.mission!.title).toBe(THEME_INFO[theme].title);
+            } else {
+              mixed++;
+              // gemischte Mission: allgemeiner Titel, die Einleitung sagt ehrlich „vor allem …, dazu noch andere“
+              expect(r.mission!.title).toBe('Waldgeheimnisse entdecken');
+              // (die Einleitung für 2–3 Jahre bleibt bewusst kurz: „Wir suchen gemeinsam.“)
+              if (age !== '2-3') expect(r.mission!.intro).toContain('noch ein paar andere Waldgeheimnisse');
+            }
           } else {
             expect(r.mission!.title).toBe('Waldgeheimnisse entdecken');
           }
+          // Keine Station widerspricht dem Titel: Steht ein Leitmotiv im Titel, passt die erste Station dazu.
+          if (r.mission!.title !== 'Waldgeheimnisse entdecken') expect(byId(r.tasks[0].templateId).themes, `${season}/${age}/${seed}`).toContain(theme);
         }
       }
     }
+    expect(pure, 'Es gibt weiterhin Missionen, die ein Leitmotiv ganz tragen').toBeGreaterThan(0);
+    expect(mixed).toBeGreaterThan(0);
   });
+
 
   it('die meisten Missionen tragen ein Leitmotiv, und alle Leitmotive kommen im Lauf der Zeit vor', () => {
     const seen = new Set<Theme>();

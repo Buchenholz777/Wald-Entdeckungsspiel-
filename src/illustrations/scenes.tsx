@@ -229,13 +229,14 @@ export function SeasonGlyph({ season }: { season: Season }) {
   }
 }
 
-/** Kleines Markenzeichen: ein Blatt in einem Kreis. */
+/** Markenzeichen von Wald-Spiel: ein helles Blatt über einem Waldpfad, im grünen Kreis. */
 export function Logo({ size = 28 }: { size?: number }) {
   return (
     <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden="true" focusable="false">
-      <circle cx="20" cy="20" r="19" fill={C.g1} stroke={C.g5} strokeWidth="2" />
-      <path d="M20 8 C28 14 30 24 22 31 C14 24 12 14 20 8 Z" fill={C.g3} stroke={C.g5} strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="M20 12 V32" stroke={C.g1} strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="20" cy="20" r="19" fill="#2c6a47" stroke="#1d4a33" strokeWidth="1.6" />
+      <path d="M20 6.5 C29.5 11.5 31 21.5 22.6 27 C13.6 21.8 11.2 12.4 20 6.5 Z" fill="#d6ebb8" stroke="#eef7de" strokeWidth="1" strokeLinejoin="round" />
+      <path d="M20.2 10.5 C20.7 16.5 21.6 21.5 22.2 24.8" stroke="#2c6a47" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M7.5 32 C13 27.8 19 31.2 25 29 C28.6 27.7 31 29.4 33 32" stroke="#f3e6c4" strokeWidth="2.4" fill="none" strokeLinecap="round" />
     </svg>
   );
 }

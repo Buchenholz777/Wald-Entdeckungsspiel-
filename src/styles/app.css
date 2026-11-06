@@ -126,8 +126,6 @@ button { cursor: pointer; }
 }
 .home-btn { min-height: var(--tap); padding: 0.35rem 1rem; font-size: 1rem; }
 .modal-home { align-self: center; }
-.brand { display: inline-flex; align-items: center; gap: 0.5rem; }
-.brand-name { font-family: var(--font-display); font-weight: 600; color: var(--forest); font-size: 1.05rem; letter-spacing: 0.01em; }
 
 .main {
   max-width: 44rem;
@@ -620,11 +618,19 @@ dialog.modal-info .modal-body { max-height: 88dvh; overflow-y: auto; }
 .find-done .find-status { color: var(--ok); }
 
 /* Schmale Geräte: Kopfleiste bricht nicht mitten im Wort um */
-.brand-name, .home-btn { white-space: nowrap; }
+.home-btn { white-space: nowrap; }
 .skip-link { min-height: 3rem; display: inline-flex; align-items: center; }
 @media (max-width: 23rem) {
-  .brand-name { display: none; }
   .home-btn { padding-inline: 0.8rem; }
+}
+
+/* Hauptaktion im Einstieg: kein harter heller Balken ueber dem Wald, sondern ein weicher, auslaufender Schleier */
+.setup .action-bar { background: none; }
+.setup .action-bar::before {
+  content: ''; position: absolute; inset: -1.6rem 0 0 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(to top, rgba(250, 247, 239, 0.82) 50%, rgba(250, 247, 239, 0));
+  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  -webkit-mask-image: linear-gradient(to top, #000 55%, transparent); mask-image: linear-gradient(to top, #000 55%, transparent);
 }
 
 /* ---------- Waldhintergrund (eigene Illustration: docs/BILDNACHWEIS.md) ----------
@@ -648,11 +654,54 @@ body { background-image: none; }
 /* App-Leiste ueber dem Foto: heller Streifen, damit Marke und Knopf lesbar bleiben */
 .app-bar { background: linear-gradient(to bottom, rgba(250, 247, 239, 0.97) 78%, rgba(250, 247, 239, 0)); }
 
-/* Einstieg: heller Titel auf dunkler Abdeckung, alle Eingaben auf deckenden Flaechen */
-.hero-forest { background: rgba(255, 252, 240, 0.93); border-radius: var(--radius-lg); padding: 1.1rem 1.2rem 1.2rem; gap: 0.35rem; box-shadow: var(--shadow); }
-.hero-forest .h1 { color: var(--forest); }
-.hero-forest .lead { color: #3f4f44; }
-.hero-kicker { margin: 0; font-family: var(--font-display); font-size: 0.95rem; letter-spacing: 0.06em; text-transform: uppercase; color: #5d6b2f; }
+/* Einstieg: Marke, Einladung und Fundstuecke bilden einen zusammenhaengenden Kopfbereich auf heller, deckender Flaeche */
+.hero-forest {
+  background: linear-gradient(180deg, rgba(255, 253, 244, 0.96) 0%, rgba(250, 248, 232, 0.94) 100%);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.2rem 1.25rem;
+  gap: 0.55rem;
+  box-shadow: var(--shadow);
+}
+.hero-forest .h1 { color: var(--forest); font-size: clamp(1.45rem, 6.4vw, 2.2rem); line-height: 1.18; margin-top: 0.15rem; }
+.hero-forest .lead { color: #3f4f44; font-size: 1.05rem; line-height: 1.5; }
+.h1-line { display: inline-block; text-wrap: balance; }
+.hero-brand { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; padding-bottom: 0.7rem; border-bottom: 2px dotted var(--sage-2); }
+
+/* Wortmarke: Blattzeichen + Schrift. Der Bindestrich bleibt ein Bindestrich, nur in Gruen abgesetzt. */
+.wordmark { display: inline-flex; align-items: center; gap: 0.55rem; min-width: 0; }
+.wordmark-text { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
+.wordmark-name { font-family: var(--font-display); font-weight: 700; color: var(--forest); white-space: nowrap; letter-spacing: 0.005em; }
+.wordmark-dash { color: #3f8a5a; padding: 0 0.04em; }
+.wordmark-lg .wordmark-name { font-size: 1.65rem; }
+.wordmark-md .wordmark-name { font-size: 1.3rem; }
+.wordmark-sm .wordmark-name { font-size: 1.1rem; }
+.wordmark-tag { font-size: 0.82rem; color: #4a5c50; margin-top: 0.2rem; font-weight: 700; line-height: 1.25; max-width: 11.5rem; }
+@media (min-width: 30rem) { .wordmark-tag { max-width: none; font-size: 0.9rem; } }
+
+/* Drei Fundstuecke aus dem Spiel als freundliche Zierde (nur dekorativ, nicht bedienbar) */
+.hero-finds { list-style: none; margin: 0; padding: 0; display: flex; flex: none; gap: 0.3rem; }
+.hero-finds li { width: clamp(2.7rem, 11.5vw, 3.9rem); border-radius: 14px; overflow: hidden; border: 2px solid #fffdf7; box-shadow: 0 2px 6px -2px rgba(35, 76, 58, 0.45); }
+.hero-finds li:nth-child(1) { transform: rotate(-4deg); }
+.hero-finds li:nth-child(2) { transform: translateY(2px) rotate(2deg); }
+.hero-finds li:nth-child(3) { transform: rotate(-2deg); }
+@media (max-width: 21.5rem) { .hero-finds { display: none; } }
+/* Schmale Telefone: kompakterer Kopfbereich, damit die Altersauswahl ohne langes Scrollen erreichbar bleibt */
+@media (max-width: 26rem) {
+  .hero-forest { padding: 0.8rem 1rem 0.95rem; gap: 0.4rem; }
+  .hero-forest .lead { font-size: 0.97rem; line-height: 1.42; }
+  .hero-brand { padding-bottom: 0.5rem; }
+  .hero-forest .h1 { font-size: clamp(1.35rem, 6.2vw, 1.7rem); }
+  .setup.screen, .screen.setup { gap: 0.8rem; }
+}
+@media (min-width: 40rem) {
+  .hero-forest { padding: 1.3rem 1.6rem 1.5rem; }
+  .hero-finds { gap: 0.6rem; }
+  .hero-finds li { width: 5.6rem; }
+  .wordmark-lg .wordmark-name { font-size: 2rem; }
+}
+
+/* Im Hauptmenue sitzt die Marke im Kopfbereich; oben bleibt nur der Sicherheitsabstand (keine helle Leiste ueber dem Wald) */
+.main.is-entry { padding-top: max(14px, env(safe-area-inset-top)); }
 .setup .group, .setup .season-row { background: rgba(255, 253, 247, 0.95); border-radius: var(--radius); padding: 0.85rem 1rem 1rem; }
 /* Die Fragezeile liegt innerhalb der hellen Fläche (nicht auf dem Rand über dem Foto) */
 .setup .group { display: block; }
