@@ -2,14 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import { concepts } from '../../catalog/concepts';
 import { giftsById } from '../../catalog/gifts';
 import {
-  REQUIRED_KEYS,
+  KEY_COUNT,
   SYMBOL_INFO,
+  completedTasks,
   describeClue,
   formatClock,
-  keyTasks,
+  keyGroups,
+  missingText,
+  progressOf,
+  progressText,
+  requiredOf,
   resultLine,
   solutionText,
   spokenClock,
+  timeupText,
   tipText,
   type EscapeMission,
   type EscapeTask,
@@ -56,40 +62,67 @@ export function EscapeScreen({ esc, motionOff, go }: Props) {
 
 type SearchDialog = null | 'zoom' | 'info' | 'swap' | 'noalt' | 'help';
 
-function KeySlots({ m, newest }: { m: EscapeMission; newest: string | null }) {
-  const slots = [0, 1, 2];
+/** Wo steht eine erledigte Karte? Schlüssel- und Fragmentnummer (1-basiert), aus der Reihenfolge der Abschlüsse abgeleitet. */
+function placeOf(m: EscapeMission, uid: string): { key: number; fragment: number } | null {
+  const i = m.completed.findIndex((c) => c.uid === uid);
+  if (i < 0) return null;
+  return { key: Math.floor(i / m.tasksPerKey) + 1, fragment: (i % m.tasksPerKey) + 1 };
+}
+
+/**
+ * Genau drei Schlüsselplätze. Jeder zeigt seine 2–3 Fragmentpositionen: belegt = Häkchen und Bild, frei = gestrichelt mit Nummer
+ * (nicht nur Farbe). Ein Schlüssel erscheint erst, wenn seine ganze Gruppe erledigt ist. Die Zahlen kommen aus `progressOf`.
+ */
+function KeySlots({ m, newestKey, newestFragment }: { m: EscapeMission; newestKey: number | null; newestFragment: string | null }) {
+  const p = progressOf(m);
+  const groups = keyGroups(m);
   return (
     <section className="key-slots" aria-label="Eure Schlüssel">
       <p className="key-count" id="key-count">
-        {m.keys.length} von {REQUIRED_KEYS} Schlüsseln
+        {progressText(p)}
       </p>
       <ol className="slots" aria-labelledby="key-count">
-        {slots.map((i) => {
-          const k = m.keys[i];
-          const info = k ? SYMBOL_INFO[k.symbol] : null;
-          const task = k ? m.tasks.find((t) => t.uid === k.uid) : null;
+        {groups.map((g) => {
+          const info = g.complete ? SYMBOL_INFO[g.symbol] : null;
+          const current = !p.complete && g.index === p.keys;
+          const positions = Array.from({ length: m.tasksPerKey }, (_, f) => g.fragments[f] ?? null);
           return (
-            <li key={i} className={`slot${k ? ' slot-full' : ''}${k && k.uid === newest ? ' slot-new' : ''}`}>
+            <li
+              key={g.index}
+              className={`slot${g.complete ? ' slot-full' : ''}${current ? ' slot-current' : ''}${newestKey === g.index ? ' slot-new' : ''}`}
+              aria-label={g.complete ? `Schlüssel ${g.index + 1}: ${info!.name}, fertig` : `Schlüssel ${g.index + 1}: ${g.fragments.length} von ${m.tasksPerKey} Entdeckungen`}
+            >
               <span className="slot-art" aria-hidden="true">
-                {k ? <SymbolIcon symbol={k.symbol} size={40} /> : <LockMark />}
+                {g.complete ? <SymbolIcon symbol={g.symbol} size={38} /> : <LockMark />}
               </span>
               <span className="slot-label">
-                {k ? (
-                  <>
-                    <strong>{info!.name}</strong>
-                    <span className="slot-sub">{task ? task.title.replace(/^(Finde|Entdecke|Suche)\s+/i, '') : ''}</span>
-                  </>
-                ) : (
-                  <>
-                    <strong>Schloss {i + 1}</strong>
-                    <span className="slot-sub">noch zu</span>
-                  </>
-                )}
+                <strong>{g.complete ? info!.name : `Schlüssel ${g.index + 1}`}</strong>
+                <span className="slot-sub">{g.complete ? 'fertig' : `${g.fragments.length} von ${m.tasksPerKey}`}</span>
+              </span>
+              <span className="frags" aria-hidden="true">
+                {positions.map((c, f) => {
+                  const task = c ? m.tasks.find((t) => t.uid === c.uid) : null;
+                  return (
+                    <span key={f} className={`frag${c ? ' frag-full' : ''}${c && c.uid === newestFragment ? ' frag-new' : ''}`}>
+                      {c ? (
+                        <>
+                          {task && <Illustration illustrationKey={task.image.illustrationKey} preset={task.image.animationPreset} />}
+                          <span className="frag-check">
+                            <IconCheck size={12} />
+                          </span>
+                        </>
+                      ) : (
+                        <span className="frag-no">{f + 1}</span>
+                      )}
+                    </span>
+                  );
+                })}
               </span>
             </li>
           );
         })}
       </ol>
+      <p className="key-missing">{missingText(p)}</p>
     </section>
   );
 }
@@ -141,8 +174,13 @@ function Search({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Route) 
   const [searchOpen, setSearchOpen] = useState(false);
   const [play, setPlay] = useState(true);
   const [playId, setPlayId] = useState(0);
-  const [newest, setNewest] = useState<string | null>(null);
-  const prevKeys = useRef(m.keys.length);
+  const [newestKey, setNewestKey] = useState<number | null>(null);
+  const [newestFragment, setNewestFragment] = useState<string | null>(null);
+  const [keyBanner, setKeyBanner] = useState<string | null>(null);
+  const [listOpen, setListOpen] = useState(false);
+  const prog = progressOf(m);
+  const prevDone = useRef(prog.done);
+  const prevKeys = useRef(prog.keys);
 
   // Ein echter Dialog pausiert die Suchzeit automatisch und gibt sie beim Schließen wieder frei.
   useEffect(() => {
@@ -161,16 +199,32 @@ function Search({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Route) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task.uid]);
 
-  // Sanftes Aufleuchten des neuen Schlüsselplatzes (kurz, optional)
+  // Ruhige Rückmeldung: Ein neues Fragment setzt sich nur an seinen Platz. Erst eine volle Gruppe zeigt „Schlüssel n geschafft!“.
+  // Die Zahlen kommen aus der Fortschrittsfunktion; die Animation ist nie die Quelle des Zustands.
   useEffect(() => {
-    if (m.keys.length > prevKeys.current) {
-      setNewest(m.keys[m.keys.length - 1].uid);
-      const t = window.setTimeout(() => setNewest(null), 1400);
-      prevKeys.current = m.keys.length;
-      return () => window.clearTimeout(t);
+    const done = prog.done;
+    const keys = prog.keys;
+    let timer: number | undefined;
+    if (done > prevDone.current) {
+      const last = m.completed[done - 1];
+      if (keys > prevKeys.current) {
+        setNewestKey(keys - 1);
+        setKeyBanner(`Schlüssel ${keys} geschafft!`);
+        timer = window.setTimeout(() => {
+          setNewestKey(null);
+          setKeyBanner(null);
+        }, 2200);
+      } else if (last) {
+        setNewestFragment(last.uid);
+        timer = window.setTimeout(() => setNewestFragment(null), 900);
+      }
     }
-    prevKeys.current = m.keys.length;
-  }, [m.keys]);
+    prevDone.current = done;
+    prevKeys.current = keys;
+    return () => {
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [prog.done, prog.keys, m.completed]);
 
   const paused = m.phase === 'searching' && m.pauses.includes('manual');
   const timeup = m.phase === 'timeup';
@@ -199,12 +253,17 @@ function Search({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Route) 
           Wald Escape <span className="esc-sub">Knackt den Waldtresor!</span>
         </h1>
         <p className="context-line">
-          {m.minutes} Minuten · {SEASON_LABEL[m.season]}
+          {m.minutes} Minuten · {SEASON_LABEL[m.season]} · {requiredOf(m)} Aufgaben für {KEY_COUNT} Schlüssel
         </p>
       </header>
 
       <TimePanel esc={esc} m={m} />
-      <KeySlots m={m} newest={newest} />
+      <KeySlots m={m} newestKey={newestKey} newestFragment={newestFragment} />
+      {keyBanner && (
+        <p className="key-banner" aria-hidden="true">
+          {keyBanner}
+        </p>
+      )}
 
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {esc.announce}
@@ -219,9 +278,8 @@ function Search({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Route) 
       {timeup && (
         <section className="timeup" aria-label="Zeit abgelaufen">
           <h2 className="timeup-title">Die Sanduhr ist durch – der Tresor wartet auf euch!</h2>
-          <p>
-            Ihr habt schon {m.keys.length} von {REQUIRED_KEYS} Schlüsseln entdeckt. Möchtet ihr in Ruhe weitersuchen?
-          </p>
+          <p>{timeupText(prog)}</p>
+          <p>Möchtet ihr in Ruhe weitersuchen?</p>
           <div className="timeup-actions">
             <button type="button" className="btn btn-primary btn-big" onClick={A.free}>
               Ohne Zeitdruck weitersuchen
@@ -255,9 +313,9 @@ function Search({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Route) 
 
       {!timeup && !paused && (
         <>
-          <nav className="esc-cards" aria-label={`Eure ${m.tasks.length} Waldschätze zur Wahl`}>
+          <nav className="esc-cards" aria-label={`Eure ${m.tasks.length} Waldaufgaben zur Wahl`}>
             <p className="esc-cards-title">
-              Eure Waldschätze zur Wahl <span className="muted">(ihr braucht {REQUIRED_KEYS})</span>
+              Eure Waldaufgaben <span className="muted">(ihr braucht {requiredOf(m)} von {m.tasks.length})</span>
             </p>
             <ol>
               {m.tasks.map((t, i) => (
@@ -279,6 +337,33 @@ function Search({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Route) 
                 </li>
               ))}
             </ol>
+            <button type="button" className="help-toggle" aria-expanded={listOpen} aria-controls="esc-task-list" onClick={() => setListOpen((o) => !o)}>
+              Übersicht: Eure Waldaufgaben
+              <IconChevron open={listOpen} />
+            </button>
+            {listOpen && (
+              <ul id="esc-task-list" className="task-list">
+                {m.tasks.map((t, i) => {
+                  const where = placeOf(m, t.uid);
+                  return (
+                    <li key={t.uid}>
+                      <button type="button" className={`task-row status-${t.status}${i === m.activeIndex ? ' is-active' : ''}`} onClick={() => A.select(i)}>
+                        <span className="task-row-thumb" aria-hidden="true">
+                          <Illustration illustrationKey={t.image.illustrationKey} preset={t.image.animationPreset} />
+                        </span>
+                        <span className="task-row-text">
+                          <strong>{t.title}</strong>
+                          <span className="muted">
+                            {where ? `Geschafft · Schlüssel ${where.key}, Entdeckung ${where.fragment}` : t.target > 1 && t.found > 0 ? `${t.found} von ${t.target} ${t.unit ?? 'Dingen'}` : 'Noch offen'}
+                          </span>
+                        </span>
+                        {t.status === 'done' && <IconCheck size={18} />}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </nav>
 
           <article className={`card status-${task.status}`} aria-labelledby="esc-task-title">
@@ -313,9 +398,13 @@ function Search({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Route) 
                 {counterText(task)}
               </p>
               <p className="key-promise">
-                <SymbolIcon symbol={task.symbol} size={26} />
+                <IconCheck size={22} />
                 <span>
-                  {task.status === 'done' ? 'Dieser Fund hat euch den Schlüssel gegeben:' : 'Dieser Fund gibt euch den Schlüssel:'} <strong>{SYMBOL_INFO[task.symbol].name}</strong>
+                  {(() => {
+                    const where = placeOf(m, task.uid);
+                    if (where) return <>Geschafft: Entdeckung {where.fragment} von {m.tasksPerKey} für <strong>Schlüssel {where.key}</strong>.</>;
+                    return m.tasksPerKey > 1 ? <>{m.tasksPerKey} verschiedene Entdeckungen ergeben einen Schlüssel.</> : <>Diese Entdeckung ergibt einen Schlüssel.</>;
+                  })()}
                 </span>
               </p>
               <button type="button" className="help-toggle" aria-expanded={searchOpen} aria-controls="esc-search-panel" onClick={() => setSearchOpen((o) => !o)}>
@@ -423,7 +512,7 @@ function Search({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Route) 
       </Modal>
 
       <Modal open={dialog === 'noalt'} onClose={close} title="Keine andere Spur übrig" onHome={home}>
-        <p>Dazu fällt uns gerade nichts Passendes mehr ein. Ihr habt noch {m.tasks.filter((t) => t.status === 'open').length} offene Karten zur Wahl, und ihr braucht nur {REQUIRED_KEYS} Schlüssel. Wählt eine andere Karte oder beendet für heute.</p>
+        <p>Dazu fällt uns gerade nichts Passendes mehr ein. Ihr habt noch {m.tasks.filter((t) => t.status === 'open').length} offene Karten zur Wahl, und ihr braucht insgesamt {requiredOf(m)} Aufgaben für {KEY_COUNT} Schlüssel. Wählt eine andere Karte oder beendet für heute.</p>
         <div className="modal-actions">
           <button type="button" className="btn btn-primary" onClick={close}>
             Zurück zu den Karten
@@ -464,7 +553,7 @@ function Combination({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Ro
   const solution = m.solution!;
   const full = m.input.every((s) => s !== null);
   const young = m.age === '4-6';
-  const owned = m.keys.map((k) => k.symbol);
+  const owned = m.keySymbols;
   const close = () => setDialog(null);
   const home = () => {
     setDialog(null);
@@ -592,10 +681,10 @@ function Combination({ esc, m, go }: { esc: Escape; m: EscapeMission; go: (r: Ro
       <Modal open={dialog === 'correct'} onClose={close} title="Einen Fund zurücknehmen?" onHome={home}>
         <p>Wenn ihr einen Fund zurücknehmt, geht es zurück zur Suche. Die Zeit läuft dabei nicht neu los: Es gibt höchstens die Restzeit von vorhin, und erst nach „Weitersuchen“. Die anderen Funde bleiben.</p>
         <ul className="correct-list">
-          {keyTasks(m).map((t) => (
+          {completedTasks(m).map((t) => (
             <li key={t.uid}>
               <span className="correct-name">
-                <SymbolIcon symbol={t.symbol} size={30} /> {t.title}
+                <strong>Schlüssel {placeOf(m, t.uid)?.key}:</strong> {t.title}
               </span>
               <button type="button" className="btn btn-secondary btn-compact" onClick={() => { setDialog(null); A.undo(t.uid); }}>
                 <IconUndo /> Zurücknehmen
@@ -622,7 +711,8 @@ function Result({ esc, m, motionOff, go }: { esc: Escape; m: EscapeMission; moti
   const [confetti, setConfetti] = useState(false);
   const [lidOpen, setLidOpen] = useState(!canCelebrateWithMotion(motionOff));
   const [finds, setFinds] = useState(false);
-  const found = keyTasks(m);
+  const found = completedTasks(m);
+  const prog = progressOf(m);
 
   // Der Tresor öffnet sich einmal sanft; das Konfetti läuft genau einmal pro Mission (Zustand wird sofort gespeichert).
   useEffect(() => {
@@ -651,14 +741,14 @@ function Result({ esc, m, motionOff, go }: { esc: Escape; m: EscapeMission; moti
           </p>
         ) : (
           <p className="success-line" role="status">
-            Ihr habt {m.keys.length} von {REQUIRED_KEYS} Schlüsseln entdeckt. Das ist ein schöner Anfang!
+            Ihr habt {progressText(prog)} geschafft. Das ist ein schöner Anfang!
           </p>
         )}
         {opened && m.outcome === 'onTime' && <p className="badge-time">Alle drei Schlüssel rechtzeitig gefunden</p>}
       </header>
 
       <div className="vault-wrap">
-        <Vault state={opened && lidOpen ? 'open' : opened ? 'ready' : 'closed'} locks={opened ? ['open', 'open', 'open'] : (m.keys.length >= 3 ? ['ready', 'ready', 'ready'] : (m.keys.map((): LockState => 'open').concat(Array(3).fill('locked')).slice(0, 3) as [LockState, LockState, LockState]))} size={200} />
+        <Vault state={opened && lidOpen ? 'open' : opened ? 'ready' : 'closed'} locks={opened ? ['open', 'open', 'open'] : prog.complete ? ['ready', 'ready', 'ready'] : ([0, 1, 2].map((i): LockState => (i < prog.keys ? 'open' : 'locked')) as [LockState, LockState, LockState])} size={200} />
       </div>
       {confetti && <Confetti onDone={() => setConfetti(false)} />}
 
@@ -675,20 +765,23 @@ function Result({ esc, m, motionOff, go }: { esc: Escape; m: EscapeMission; moti
 
       {finds && (
         <section aria-label="Eure Funde" className="finds-section">
-          <h2 className="collection-title">Eure Schlüssel-Funde</h2>
+          <h2 className="collection-title">Eure Waldaufgaben</h2>
           <ul className="collection">
-            {found.map((t) => (
-              <li key={t.uid} className="find find-done">
-                <div className="find-art">
-                  <Illustration illustrationKey={t.image.illustrationKey} preset={t.image.animationPreset} />
-                  <span className="find-stamp" aria-hidden="true">
-                    <IconCheck size={22} />
-                  </span>
-                </div>
-                <p className="find-title">{t.title}</p>
-                <p className="find-status">Schlüssel: {SYMBOL_INFO[t.symbol].name}</p>
-              </li>
-            ))}
+            {found.map((t) => {
+              const where = placeOf(m, t.uid);
+              return (
+                <li key={t.uid} className="find find-done">
+                  <div className="find-art">
+                    <Illustration illustrationKey={t.image.illustrationKey} preset={t.image.animationPreset} />
+                    <span className="find-stamp" aria-hidden="true">
+                      <IconCheck size={22} />
+                    </span>
+                  </div>
+                  <p className="find-title">{t.title}</p>
+                  <p className="find-status">{where ? `Schlüssel ${where.key} · Entdeckung ${where.fragment}` : ''}</p>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}

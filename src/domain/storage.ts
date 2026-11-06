@@ -46,14 +46,15 @@ export const DEFAULT_SETTINGS: Settings = {
   legacyNoticePending: false,
   giftsReceived: [],
   mode: 'treasure',
-  escapeMinutes: 15,
+  escapeMinutes: null,
+  escapeSize: null,
 };
 
 const templatesById = new Map(templates.map((t) => [t.id, t]));
 
 const AGES: AgeGroup[] = ['2-3', '4-6', '7-10'];
 const ENVS: Environment[] = ['forest', 'park', 'city', 'beach', 'meadow', 'garden', 'playground', 'mountain', 'water'];
-const CONTEXTS: ContextTag[] = ['conifers', 'maple', 'oak', 'chestnut', 'sand', 'gravel', 'shadow', 'puddles', 'snow', 'hazel', 'beech', 'mud', 'fern'];
+const CONTEXTS: ContextTag[] = ['conifers', 'maple', 'oak', 'chestnut', 'sand', 'gravel', 'shadow', 'puddles', 'snow', 'hazel', 'beech', 'mud', 'fern', 'hornbeam', 'linden', 'alder'];
 
 function isObj(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -73,7 +74,11 @@ export function sanitizeSettings(raw: unknown): Settings {
     out.giftsReceived = seen;
   }
   if (GAME_MODES.includes(raw.mode as GameMode)) out.mode = raw.mode as GameMode;
-  if (raw.escapeMinutes === 10 || raw.escapeMinutes === 15 || raw.escapeMinutes === 20) out.escapeMinutes = raw.escapeMinutes;
+  // Ältere Einstellungen kennen die Größe noch nicht: Ihr früherer Standardwert (15) war nie eine bewusste Wahl und gilt nicht weiter.
+  if ('escapeSize' in raw) {
+    if (raw.escapeMinutes === 10 || raw.escapeMinutes === 15 || raw.escapeMinutes === 20 || raw.escapeMinutes === 30) out.escapeMinutes = raw.escapeMinutes;
+    if (raw.escapeSize === 'small' || raw.escapeSize === 'large') out.escapeSize = raw.escapeSize;
+  }
   if (typeof raw.taskCount === 'number' && raw.taskCount >= 1 && raw.taskCount <= 5) out.taskCount = Math.round(raw.taskCount);
   out.boost = raw.boost === true;
   out.motionOff = raw.motionOff === true;

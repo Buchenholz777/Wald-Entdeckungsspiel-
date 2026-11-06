@@ -25,7 +25,7 @@ function params(over: Partial<GenerateParams> = {}): GenerateParams {
 }
 
 const byId = (id: string) => templates.find((t) => t.id === id)!;
-const ALL_CONTEXT: ContextTag[] = ['conifers', 'beech', 'oak', 'maple', 'hazel', 'chestnut', 'fern', 'mud'];
+const ALL_CONTEXT: ContextTag[] = ['conifers', 'beech', 'oak', 'maple', 'hazel', 'chestnut', 'fern', 'mud', 'hornbeam', 'linden', 'alder'];
 
 describe('Generator (nur Wald)', () => {
   it('liefert für alle Jahreszeiten × Altersgruppen und 1–5 Stationen korrekte Runden ohne doppelte Konzepte', () => {

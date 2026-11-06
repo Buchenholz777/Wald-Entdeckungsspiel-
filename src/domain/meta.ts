@@ -51,11 +51,14 @@ export const CONTEXT_LABEL: Record<ContextTag, string> = {
   beech: 'Buche vorhanden',
   mud: 'Weicher Boden oder Matsch',
   fern: 'Farn vorhanden',
+  hornbeam: 'Hainbuche vorhanden',
+  linden: 'Linde vorhanden',
+  alder: 'Erle vorhanden',
 };
 
 /** Kontextangaben im Wald (jede muss mindestens eine Vorlage freischalten). Frühere Orte bieten nichts mehr an. */
 export const CONTEXT_BY_ENV: Record<Environment, ContextTag[]> = {
-  forest: ['conifers', 'beech', 'oak', 'maple', 'hazel', 'chestnut', 'fern', 'mud'],
+  forest: ['conifers', 'beech', 'oak', 'maple', 'hazel', 'hornbeam', 'linden', 'alder', 'chestnut', 'fern', 'mud'],
   park: [],
   city: [],
   beach: [],

@@ -1,4 +1,4 @@
-# Objektinfos (Katalogstand 4.0.0)
+# Objektinfos (Katalogstand 4.1.0)
 
 Alle aktiven Motive mit den drei Bausteinen je Altersgruppe: **Das habt ihr vor euch**, **So ist es entstanden**, **Sein kleines Waldgeheimnis** (7–10 zusätzlich „Zum Nachdenken“). Der Suchhinweis steht getrennt. Wortzahlen in Klammern.
 
@@ -612,3 +612,98 @@ Alle aktiven Motive mit den drei Bausteinen je Altersgruppe: **Das habt ihr vor 
 - **Sein kleines Waldgeheimnis:** Die nächsten Blätter sind in der Knospe schon fertig angelegt. Die Schuppen schützen sie vor Kälte und Austrocknung. So kann der Baum im Frühling schnell Blätter entfalten, sobald die Bedingungen passen.
 - **Zum Nachdenken:** Wie würde der Baum im Frühling wohl starten, wenn seine Blätter erst dann angelegt würden?
 - *Suchhinweis:* Schaut am Wegrand an kleinen Zweigen, die tief genug hängen. Bitte nur anschauen und nichts abbrechen.
+
+## Finde einen kleinen Zweig, der sich wie ein Y gabelt.
+
+`y-twig` · Leitmotive: Wie aus Kleinem ein Baum wird; Muster, die Geschichten erzählen
+
+### 4-6 Jahre (69 Wörter)
+
+- **Das habt ihr vor euch:** Dieser Zweig teilt sich in zwei Äste. Die Stelle sieht aus wie der Buchstabe Y.
+- **So ist es entstanden:** Zweige wachsen an ihrer Spitze weiter. Manchmal bildet der Zweig dort zwei neue Triebe, dann entsteht eine Gabel. Vielleicht ist der Zweig im Wind oder Regen heruntergefallen.
+- **Sein kleines Waldgeheimnis:** So wird eine Baumkrone Jahr für Jahr verzweigter und dichter. Auf jedem Ast sitzen Knospen, aus denen im Frühling neue Blätter wachsen. Bitte brecht keinen Zweig ab.
+- *Suchhinweis:* Schaut am Weg und am Wegrand auf kleine Zweige am Boden oder tief hängende Zweige. Bitte nur anschauen und nichts abbrechen.
+
+### 7-10 Jahre (125 Wörter)
+
+- **Das habt ihr vor euch:** Eine Zweiggabel entsteht, wenn sich aus einer Knospe oder einer Spitze zwei Triebe weiterentwickeln. Bei vielen Laubbäumen sitzen die Knospen abwechselnd oder gegenständig, die Gabel ist dann ein Hinweis darauf, wie der Zweig gewachsen ist.
+- **So ist es entstanden:** Die Spitze eines Zweiges kann durch Frost, Wind, Wild oder Insekten verloren gehen. Dann treibt eine Seitenknospe aus und übernimmt. So kann eine Gabel entstehen. Welche Ursache bei einem einzelnen Zweig zutrifft, lässt sich oft nicht sagen.
+- **Sein kleines Waldgeheimnis:** Verzweigung ist eine Möglichkeit des Baumes, viel Licht einzufangen. Je mehr Äste und Blätter, desto mehr Fläche für die Sonne. Gleichzeitig muss die Krone stabil bleiben, damit Wind und Schnee sie nicht abbrechen.
+- **Zum Nachdenken:** Wie viele Gabeln zählt ihr an eurem Zweig? Was würde passieren, wenn ein Baum nur einen einzigen langen Ast hätte?
+- *Suchhinweis:* Schaut am Weg und am Wegrand auf kleine Zweige am Boden oder tief hängende Zweige. Bitte nur anschauen und nichts abbrechen.
+
+## Finde ein Blatt, auf dem man das Netz aus feinen Adern gut sieht.
+
+`leaf-vein-net` · Leitmotive: Muster, die Geschichten erzählen; Der Wald im Jahreslauf
+
+### 4-6 Jahre (85 Wörter)
+
+- **Das habt ihr vor euch:** Auf diesem Blatt sieht man viele feine Linien. Das sind die Adern. Eine dicke Ader läuft in der Mitte entlang, dünnere gehen zu den Seiten.
+- **So ist es entstanden:** Das Blatt ist an einem Baum oder Strauch gewachsen und liegt jetzt am Boden. Die Adern sind schon beim Wachsen im Blatt entstanden.
+- **Sein kleines Waldgeheimnis:** Durch die Adern fließt Wasser ins Blatt, und Zucker fließt hinaus zum Baum. Zwischen den dicken Adern liegt ein feines Netz. Es hält das Blatt auch stabil. Bitte schaut nur an und legt das Blatt wieder hin.
+- *Suchhinweis:* Schaut auf den Boden am Weg. Ein Blatt, das nicht zu feucht und nicht zu dunkel ist, zeigt die Adern am besten. Bitte nur anschauen oder vorsichtig hochhalten und wieder hinlegen.
+
+### 7-10 Jahre (120 Wörter)
+
+- **Das habt ihr vor euch:** Die Adern eines Laubblattes bilden ein Leitungssystem: Die Mittelader trägt Seitenadern, zwischen ihnen verbinden feinere Adern alles zu einem Netz. Bei vielen Bäumen ist das Muster netzartig, bei Gräsern verlaufen die Adern dagegen eher parallel.
+- **So ist es entstanden:** Die Adern werden angelegt, während das Blatt in der Knospe heranwächst und sich dann entfaltet. Wenn die grüne Blattfläche im Herbst abbaut, bleiben die Adern häufig noch länger sichtbar.
+- **Sein kleines Waldgeheimnis:** In den Adern liegen Leitungen für Wasser mit Nährsalzen (nach oben ins Blatt) und für den Zucker aus der Fotosynthese (hinaus zum Baum). Das dichte Netz sorgt dafür, dass jede Stelle des Blattes versorgt wird, auch wenn eine Ader beschädigt ist.
+- **Zum Nachdenken:** Wie sieht das Netz bei verschiedenen Blättern aus? Welches Muster erkennt ihr an den Seitenadern?
+- *Suchhinweis:* Schaut auf den Boden am Weg. Ein Blatt, das nicht zu feucht und nicht zu dunkel ist, zeigt die Adern am besten. Bitte nur anschauen oder vorsichtig hochhalten und wieder hinlegen.
+
+## Entdecke ein dreizipfliges Flügelblatt mit einem kleinen Nüsschen.
+
+`hornbeam-fruit` · Leitmotive: Wie aus Kleinem ein Baum wird; Der Wald im Jahreslauf
+
+### 4-6 Jahre (96 Wörter)
+
+- **Das habt ihr vor euch:** Das ist die Frucht einer Hainbuche. Ein kleines Nüsschen sitzt in einem Flügelblatt. Das Flügelblatt hat drei Zipfel, der mittlere ist am längsten.
+- **So ist es entstanden:** Hainbuchen blühen im Frühling. Im Sommer und Herbst reifen die Früchte, später fallen sie ab. Das Flügelblatt dreht sich beim Fallen und der Wind kann die Frucht ein Stück tragen.
+- **Sein kleines Waldgeheimnis:** Das Flügelblatt ist wie ein kleines Segel. So landet die Frucht nicht direkt unter dem Mutterbaum, sondern etwas weiter weg. Dort hat ein junger Baum mehr Platz und Licht. Für manche Waldtiere ist das Nüsschen auch ein Futter. Bitte lasst es im Wald.
+- *Suchhinweis:* Schaut unter Hainbuchen auf den Boden, auch an Hecken am Wegrand. Bitte nur anschauen. Das Nüsschen bleibt im Wald.
+
+### 7-10 Jahre (136 Wörter)
+
+- **Das habt ihr vor euch:** Die Frucht der Hainbuche ist ein kleines gerilltes Nüsschen, das mit einem dreilappigen Hüllblatt verwachsen ist. Der mittlere Lappen ist deutlich länger als die seitlichen. Mit diesem Merkmal lässt sie sich gut von anderen Baumfrüchten unterscheiden.
+- **So ist es entstanden:** Die Früchte hängen in Gruppen an den Zweigen und reifen im Spätsommer und Herbst. Sie lösen sich im Herbst, je nach Jahr und Wetter auch noch im Winter. Der Wind trägt sie dann ein Stück vom Baum weg.
+- **Sein kleines Waldgeheimnis:** Das Hüllblatt dient als Flugorgan: Es bremst den Fall und versetzt die Frucht in Drehung. Der Samen im Nüsschen kann so ein Stück vom Mutterbaum entfernt keimen. Viele Vögel und Nagetiere fressen die Nüsschen auch. Wie viele davon keimen, hängt von Wetter und Ort ab.
+- **Zum Nachdenken:** Warum ist ein Samen weiter weg vom Mutterbaum oft im Vorteil? Welche Nachteile könnte ein Flügel haben?
+- *Suchhinweis:* Schaut unter Hainbuchen auf den Boden, auch an Hecken am Wegrand. Bitte nur anschauen. Das Nüsschen bleibt im Wald.
+
+## Finde ein langes Flügelblatt, an dem kleine runde Nüsschen hängen.
+
+`linden-fruit` · Leitmotive: Wie aus Kleinem ein Baum wird; Der Wald im Jahreslauf
+
+### 4-6 Jahre (89 Wörter)
+
+- **Das habt ihr vor euch:** Das ist ein kleiner Fruchtstand einer Linde. Mehrere kleine runde Nüsschen hängen an einem Stiel. Ein langes schmales Blatt ist mit dem Stiel verwachsen.
+- **So ist es entstanden:** Linden blühen im Sommer mit gelblichen Blüten, die Bienen mögen. Danach wachsen die Nüsschen. Im Herbst oder Winter fällt der ganze Fruchtstand ab und dreht sich beim Fallen.
+- **Sein kleines Waldgeheimnis:** Das lange Blatt ist wie ein Flügel und hilft dem Wind, den Fruchtstand ein Stück weiterzutragen. So kommen die Samen nicht alle direkt unter dem Baum an. Bitte schaut nur an und lasst die Nüsschen im Wald.
+- *Suchhinweis:* Schaut unter Linden auf den Boden. Bitte nur anschauen. Die Nüsschen bleiben im Wald.
+
+### 7-10 Jahre (129 Wörter)
+
+- **Das habt ihr vor euch:** Der Fruchtstand der Linde besteht aus mehreren kleinen kugeligen Nüsschen an einem gemeinsamen Stiel. Das Flügelblatt, ein umgebildetes Hochblatt, ist bis etwa zur Hälfte mit dem Stiel verwachsen und fällt zusammen mit dem Fruchtstand ab.
+- **So ist es entstanden:** Auf die Blüte im Frühsommer folgen die Nüsschen, die im Herbst reifen. Der Fruchtstand kann je nach Jahr und Witterung noch über den Winter am Baum hängen und fällt dann ab. Die Windverbreitung ist eine Anpassung der Linde.
+- **Sein kleines Waldgeheimnis:** Das Hochblatt wirkt als Flugorgan: Beim Fallen dreht es sich und bremst den Fall. So können Wind und Böen die Frucht über die Baumkrone hinaus tragen. Wie weit, hängt vom Wind ab und lässt sich nicht pauschal sagen.
+- **Zum Nachdenken:** Was verändert sich beim Fallen, wenn das Flügelblatt fehlt? Wie könntet ihr das mit einem Stück Papier ausprobieren?
+- *Suchhinweis:* Schaut unter Linden auf den Boden. Bitte nur anschauen. Die Nüsschen bleiben im Wald.
+
+## Entdecke kleine dunkle Zäpfchen an einem Laubbaum-Zweig.
+
+`alder-cone` · Leitmotive: Wie aus Kleinem ein Baum wird; Der Wald im Jahreslauf; Das kleine Wald-Wasserwunder
+
+### 4-6 Jahre (91 Wörter)
+
+- **Das habt ihr vor euch:** Das sind kleine dunkle Zäpfchen an einem Zweig. Sie sehen aus wie winzige Zapfen, aber sie wachsen an einem Laubbaum, der Erle.
+- **So ist es entstanden:** Im Frühling blüht die Erle mit Kätzchen. Daraus wachsen im Sommer die kleinen Fruchtzäpfchen. Im Herbst öffnen sie sich, und die Samen fallen heraus. Die leeren Zäpfchen bleiben oft bis in den Winter am Zweig.
+- **Sein kleines Waldgeheimnis:** Die Schuppen des Zäpfchens öffnen sich bei trockenem Wetter und schließen sich oft wieder, wenn es feucht wird. Erlen wachsen gern an Bächen und feuchten Stellen. Bitte schaut nur an und brecht nichts ab.
+- *Suchhinweis:* Schaut an Bächen, feuchten Stellen und Waldrändern nach Erlen. Bitte nur anschauen und nichts abbrechen.
+
+### 7-10 Jahre (139 Wörter)
+
+- **Das habt ihr vor euch:** Der Fruchtstand der Schwarzerle ist ein kleines, eiförmiges, verholztes Zäpfchen auf einem kurzen Stiel. Er entsteht aus einem weiblichen Kätzchen. Obwohl die Erle ein Laubbaum ist, sieht ihr Fruchtstand wie ein kleiner Zapfen aus.
+- **So ist es entstanden:** Die weiblichen Blüten verholzen nach der Bestäubung zu Zäpfchen, die im Sommer grün sind und im Herbst braun werden und reifen. Nach dem Ausfallen der Samen bleiben viele Zäpfchen noch über den Winter hängen, manche bis ins nächste Frühjahr.
+- **Sein kleines Waldgeheimnis:** Die Schuppen öffnen sich bei trockener Witterung und geben die kleinen, leichten Samen frei, bei Feuchtigkeit schließen sie sich oft wieder. Die Samen werden vom Wind und teilweise vom Wasser verbreitet. Die Erle steht deshalb oft in Ufernähe, wo Wasser sie weitertragen kann.
+- **Zum Nachdenken:** Was unterscheidet die Zäpfchen der Erle von den Zapfen einer Fichte oder Kiefer? Woran erkennt man, dass der Baum trotzdem ein Laubbaum ist?
+- *Suchhinweis:* Schaut an Bächen, feuchten Stellen und Waldrändern nach Erlen. Bitte nur anschauen und nichts abbrechen.

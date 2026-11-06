@@ -1,33 +1,72 @@
 import type { AgeGroup, ContextTag, RoundTask, Season, SeasonSource } from '../types';
 
 /**
- * Wald Escape – „Knackt den Waldtresor!“: gemeinsame Zeitmission mit fünf Suchkarten, drei Schlüsseln und einer Symbolkombination.
- * Alles hier ist reine Spiellogik ohne Oberfläche. Die Uhr wird immer aus Zeitpunkten berechnet (nie aus gezählten Ticks)
- * und bekommt die aktuelle Zeit als Parameter, damit Tests mit einer eigenen Uhr arbeiten können.
+ * Wald Escape – „Knackt den Waldtresor!“: gemeinsame Zeitmission mit Wahlkarten, Schlüsselfragmenten, drei Schlüsseln
+ * und einer Symbolkombination. Alles hier ist reine Spiellogik ohne Oberfläche. Die Uhr wird immer aus Zeitpunkten berechnet
+ * (nie aus gezählten Ticks) und bekommt die aktuelle Zeit als Parameter, damit Tests mit einer eigenen Uhr arbeiten können.
+ *
+ * Begriffe: Suchaufgabe (ein konkreter Auftrag) · Fundmenge (Exemplare innerhalb eines Auftrags) · Fragment (ein vollständig
+ * erledigter, unterschiedlicher Auftrag) · Schlüssel (2 oder 3 Fragmente) · Tresorziel (immer 3 Schlüssel).
  */
 
-export const ESCAPE_MINUTES = [10, 15, 20] as const;
+export const ESCAPE_MINUTES = [10, 15, 20, 30] as const;
 export type EscapeMinutes = (typeof ESCAPE_MINUTES)[number];
-export const ESCAPE_DEFAULT_MINUTES: EscapeMinutes = 15;
-export const ESCAPE_MINUTES_LABEL: Record<EscapeMinutes, string> = {
-  10: 'Kurze Zeitmission',
-  15: 'Unser Waldabenteuer',
-  20: 'Mehr Zeit zum Entdecken',
+
+/** Anzahl der Tresorschlüssel. Sie ist immer drei. */
+export const KEY_COUNT = 3;
+/** Alte Bezeichnung, weiterhin verwendet (gleichbedeutend mit KEY_COUNT). */
+export const REQUIRED_KEYS = KEY_COUNT;
+
+/** Aufgaben pro Schlüssel: 2 (kleine Mission), 3 (große Mission). 1 gibt es nur in alten, kompatibel fortgesetzten Missionen. */
+export type TasksPerKey = 1 | 2 | 3;
+export type NewTasksPerKey = 2 | 3;
+
+export type EscapeSize = 'small' | 'large';
+
+export interface SizeInfo {
+  size: EscapeSize;
+  tasksPerKey: NewTasksPerKey;
+  /** Insgesamt nötige unterschiedliche Aufgaben */
+  required: number;
+  /** Angestrebte offene Auswahl */
+  offered: number;
+  label: string;
+  /** Standard-Suchzeit in Minuten */
+  defaultMinutes: EscapeMinutes;
+}
+
+export const SIZES: Record<EscapeSize, SizeInfo> = {
+  small: { size: 'small', tasksPerKey: 2, required: 6, offered: 8, label: 'Kleine Schlüsselmission', defaultMinutes: 20 },
+  large: { size: 'large', tasksPerKey: 3, required: 9, offered: 12, label: 'Große Schlüsselmission', defaultMinutes: 30 },
 };
 
-/** Anzahl der Schlüssel, die für den Tresor gebraucht werden. Sie sinkt nie, auch bei kleinem Pool nicht. */
-export const REQUIRED_KEYS = 3;
-/** Normale Zahl der Suchkarten */
-export const CARD_COUNT = 5;
+export const requiredTasks = (tasksPerKey: TasksPerKey): number => KEY_COUNT * tasksPerKey;
 
+export function sizeOf(tasksPerKey: NewTasksPerKey): SizeInfo {
+  return tasksPerKey === 3 ? SIZES.large : SIZES.small;
+}
+
+/** Escape ist ab 4 Jahren mit erwachsener Begleitung gedacht; das abgebildete Kleinkind ändert das nicht. */
 export type EscapeAge = Exclude<AgeGroup, '2-3'>;
-/** Wald Escape ist ab 4 Jahren mit erwachsener Begleitung gedacht. */
 export function canPlayEscape(age: AgeGroup | null): age is EscapeAge {
   return age === '4-6' || age === '7-10';
 }
 
-export function toEscapeMinutes(n: number): EscapeMinutes {
-  return n === 10 || n === 20 ? n : 15;
+/** Standardgröße je Altersgruppe: 4–6 klein (sechs Aufgaben), 7–10 groß (neun Aufgaben). Erwachsene dürfen frei wählen. */
+export function defaultSize(age: EscapeAge): EscapeSize {
+  return age === '7-10' ? 'large' : 'small';
+}
+
+export function toEscapeMinutes(n: unknown): EscapeMinutes {
+  return n === 10 || n === 15 || n === 20 || n === 30 ? n : 20;
+}
+
+/** Ehrliche Kennzeichnung der Zeitwahl. Die Zeiten sind Ausgangswerte, nicht mit Familien erprobt. */
+export function minutesNote(minutes: EscapeMinutes, requiredTasksCount: number): string {
+  if (minutes === 10) return `Bewusst kurz, für ${requiredTasksCount} Aufgaben sehr knapp`;
+  if (minutes === 15) return 'Zügig';
+  if (minutes === 20) return 'Empfohlen für 6 Aufgaben';
+  return 'Empfohlen für 9 Aufgaben';
 }
 
 /* ---------------- Symbolschlüssel ---------------- */
@@ -70,7 +109,7 @@ export type PauseReason = 'manual' | 'menu' | 'dialog';
  *  searching – Suchzeit (läuft oder steht wegen Pause)
  *  timeup – Zeit abgelaufen, Entscheidung offen
  *  free – Suchen ohne Zeitdruck
- *  combination – drei Schlüssel, Symbolrätsel ohne Countdown
+ *  combination – alle Schlüssel fertig, Symbolrätsel ohne Countdown
  *  opened – Tresor geöffnet, Geschenk
  *  ended – vorzeitig beendet (ehrlicher Teilabschluss)
  */
@@ -80,14 +119,12 @@ export const ESCAPE_PHASES: EscapePhase[] = ['searching', 'timeup', 'free', 'com
 /** Ergebnis der Zeitphase: offen, rechtzeitig geschafft oder abgelaufen. Nie beides. */
 export type TimeOutcome = 'open' | 'onTime' | 'expired';
 
-export interface EscapeTask extends RoundTask {
-  /** Symbolschlüssel, den diese Karte beim Erfüllen liefert (eindeutig innerhalb der Mission) */
-  symbol: SymbolId;
-}
+/** Eine Suchkarte. Sie trägt kein eigenes Symbol: Die drei Schlüsselsymbole stehen fest bei der Mission. */
+export type EscapeTask = RoundTask;
 
-export interface EscapeKey {
+/** Ein vollständig erledigter Auftrag in der Reihenfolge des Abschlusses (stabile ID der Karte). */
+export interface Completed {
   uid: string;
-  symbol: SymbolId;
   templateId: string;
   at: number;
 }
@@ -106,10 +143,16 @@ export interface EscapeGift {
   at: number;
 }
 
+/** Regelversion der Mission: 1 = frühere Regel (ein Fund = ein Schlüssel, drei Funde), 2 = Fundgruppen (2 oder 3 Aufträge je Schlüssel). */
+export type EscapeRules = 1 | 2;
+
 export interface EscapeMission {
-  v: 1;
+  /** Schema der gespeicherten Mission */
+  v: 2;
   id: string;
   mode: 'escape';
+  /** Regelversion; alte Missionen bleiben mit Regel 1 kompatibel fortsetzbar */
+  rules: EscapeRules;
   catalogVersion: string;
   createdAt: number;
   updatedAt: number;
@@ -121,15 +164,18 @@ export interface EscapeMission {
   context: ContextTag[];
   minutes: EscapeMinutes;
   seed: number;
-  requiredKeys: number;
-  /** Anzahl der Karten beim Start (3, 4 oder 5) */
+  keyCount: 3;
+  tasksPerKey: TasksPerKey;
+  /** Anzahl der Karten beim Start */
   cardCount: number;
   tasks: EscapeTask[];
   excludedConcepts: string[];
   swaps: number;
   activeIndex: number;
-  /** Erhaltene Schlüssel in der Reihenfolge des Erhalts */
-  keys: EscapeKey[];
+  /** Die drei festen Schlüsselsymbole (bei Missionsbeginn ausgewählt und gespeichert) */
+  keySymbols: SymbolId[];
+  /** Vollständig erledigte Aufträge in der Reihenfolge des Abschlusses; Schlüssel und Fragmente werden daraus abgeleitet */
+  completed: Completed[];
   phase: EscapePhase;
   pauses: PauseReason[];
   clock: EscapeClock;
@@ -152,4 +198,5 @@ export interface EscapeParams {
   seasonSource: SeasonSource;
   context: ContextTag[];
   minutes: EscapeMinutes;
+  tasksPerKey: NewTasksPerKey;
 }

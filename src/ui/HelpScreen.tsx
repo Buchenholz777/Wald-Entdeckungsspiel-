@@ -43,7 +43,7 @@ export function HelpScreen({ game, pwa, back }: Props) {
           <dt>Walddetektive</dt>
           <dd>Ist in dieser Fassung noch nicht dabei und kommt später.</dd>
           <dt>Wald Escape: Knackt den Waldtresor!</dt>
-          <dd>Ab 4 Jahren mit erwachsener Begleitung. Ihr bekommt fünf Karten zur Wahl und braucht drei davon, bevor die Sanduhr abgelaufen ist (10, 15 oder 20 Minuten). Jeder Fund schenkt einen Symbolschlüssel. Mit den drei Schlüsseln löst ihr in Ruhe ein kleines Symbolrätsel und öffnet den Waldtresor. Die Zeit läuft nur bei der Suche: Infos lesen, Bilder vergrößern, Karten tauschen und Pausen kosten keine Suchzeit. Wenn das Telefon gesperrt wird, läuft die Sanduhr weiter, tippt bei einer echten Suchpause auf „Pause“. Ist die Zeit abgelaufen, könnt ihr ohne Zeitdruck weitersuchen und den Tresor trotzdem öffnen; es gibt dann dasselbe Geschenk, nur ohne die Aussage „rechtzeitig“.</dd>
+          <dd>Ab 4 Jahren mit erwachsener Begleitung. Ihr wählt zwischen einer kleinen Mission (6 Aufgaben) und einer großen (9 Aufgaben) und bekommt dafür 8 bzw. 12 Karten zur Wahl. Für jeden Schlüssel müsst ihr 2 (klein) oder 3 (groß) verschiedene Dinge entdecken; drei Schlüssel öffnen den Tresor. Die Sanduhr läuft 10, 15, 20 oder 30 Minuten. Mit den drei Schlüsseln löst ihr in Ruhe ein kleines Symbolrätsel und öffnet den Waldtresor. Die Zeit läuft nur bei der Suche: Infos lesen, Bilder vergrößern, Karten tauschen und Pausen kosten keine Suchzeit. Wenn das Telefon gesperrt wird, läuft die Sanduhr weiter, tippt bei einer echten Suchpause auf „Pause“. Ist die Zeit abgelaufen, könnt ihr ohne Zeitdruck weitersuchen und den Tresor trotzdem öffnen; es gibt dann dasselbe Geschenk, nur ohne die Aussage „rechtzeitig“.</dd>
         </dl>
       </section>
 

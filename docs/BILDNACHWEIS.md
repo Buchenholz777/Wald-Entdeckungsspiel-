@@ -20,6 +20,23 @@ Der Hintergrund ist eine **eigene Illustration** dieses Projekts, kein Foto und 
 
 WebP wird bevorzugt, JPEG ist der Rückfall (`<picture>`). Die Dateien werden mit Hash-Namen gebaut und stehen im Offline-Cache. Es gibt keinen Fremdzugriff. Fällt das Bild aus, bleibt die ruhige Grundfläche `--forest-fallback`. Keine Animation, kein Parallax, kein Video.
 
+## Familien-Illustration im Hauptmenü (eigene Zeichnung)
+
+Im Kopfbereich des Hauptmenüs steht eine **eigens gezeichnete, fiktive Familie** auf einem sicheren, sonnigen Waldweg: ein schlanker Vater (braune Haare mit Undercut und längerem Deckhaar, voller gepflegter Bart, blaugrüne Augen, salbeigrüne Overshirt-Jacke), eine Mutter (lange braune Haare, braune Augen, terrakottafarbene Jacke über cremefarbenem Oberteil) und ein kleiner Junge von etwa zwei bis zweieinhalb Jahren (Kleinkindproportionen mit großem, rundem Kopf und kurzen Beinen, dunkelblonder Undercut, blaue Augen, ockergelbe Jacke, dunkelblaue Hose, grüne Stiefel). Sie zeigen gemeinsam auf ein Moospolster und einen Zapfen am Boden. Es sind nur diese drei Personen, kein Foto, keine KI-Gesichter nach realen Vorbildern, keine Schrift im Bild; die Zeichnung ist eine eigenständige Gestaltung und stellt keine reale Familie dar.
+
+| Angabe | Wert |
+|---|---|
+| Erzeugung | `scripts/make-family.mjs` zeichnet Figuren und Szene als SVG (reiner Code, deterministisch) und rendert sie mit `sharp` zu WebP und JPEG; die Quell-SVGs liegen daneben |
+| Aufruf | `npm run images:family` |
+| Rechte | eigene Erstellung im Rahmen dieses Projekts, keine Fremdbilder, keine Lizenzpflichten |
+| Verwendung | nur im Hauptmenü, in `src/ui/FamilyHero.tsx`; im Spiel (auch während einer Suche) gibt es das Bild nicht, dort bleibt der ruhige Waldhintergrund unverändert |
+| Zuschnitte | `familie-breit-1000` (1000 × 560, Tablet und Desktop, Figuren in der Mitte, Wortmarke, Überschrift und Moduswahl bleiben frei) und `familie-schmal-720` (720 × 600, eigener Ausschnitt für Smartphones bis 600 px Breite, Gesichter in brauchbarer mittlerer Größe) |
+| Einbindung | `<picture>` mit WebP und JPEG-Rückfall, feste Maße (kein Layoutsprung), Waldgrün als Rückfallfläche, Hash-Namen im Offline-Cache (geprüft: alle vier Dateien im Service-Worker-Cache, Seite lädt bei gestopptem Server mit Familienbild) |
+| Bildbeschreibung | „Gezeichnete Familie auf einem sonnigen Waldweg: Vater, kleiner Sohn und Mutter zeigen gemeinsam auf ein Moospolster und einen Zapfen am Boden.“ |
+| Grenzen | Stilisierte Flachillustration; die Zeigehände haben eine natürliche Armlänge und berühren die Funde nicht. Wirkung der Gesichter nur am Bildschirmfenster beurteilt, nicht mit Familien. |
+
+Das Altersfenster von Wald Escape (ab 4 Jahren) ändert das abgebildete Kleinkind nicht.
+
 ## Gegenstandsbilder
 
 Alle 30 Suchmotive (Eichel, Eichelhütchen, Buchecker, Hülle, Nussschale, Zapfen, Nadelzweig, Knospe, Blätter, Moos, Farn, Flechte, Pilze, Spuren …) sind **eigene naturgetreue Zeichnungen aus Code** (SVG mit Verläufen und Lichtfiltern), erstellt für dieses Projekt:

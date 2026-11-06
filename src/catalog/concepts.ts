@@ -1100,4 +1100,59 @@ c('beechBud', {
   src: ['LfL Bayern, Gewöhnliche Buche (Q2); Knospenanlage nach Fachliteratur zur Knospenbildung (Studer, Elemente der Naturwissenschaft), Buchenspezifisches nicht gesondert belegt. Hainbuchenknospe kürzer (NABU).'],
 });
 
+c('yTwig', {
+  label: 'Ein Zweig mit Gabelung',
+  m: [
+    'Das ist ein Zweig, der sich in zwei Äste teilt. Die Gabel sieht aus wie ein Y.',
+    'Der Zweig ist an einem Baum oder Strauch gewachsen. Vielleicht ist er heruntergefallen.',
+    'Schaut am Weg und am Wegrand auf kleine Zweige am Boden oder tief hängende Zweige. Bitte nur anschauen und nichts abbrechen.',
+  ],
+  x: 'An jeder Gabel hat ein Zweig zwei neue Triebe gebildet.',
+  src: [FORST_GEN],
+});
+
+c('veinNet', {
+  label: 'Ein Blatt mit Adernetz',
+  m: [
+    'Das ist ein Blatt, auf dem man die Adern gut sieht. Sie bilden ein feines Netz.',
+    'Die Adern sind die Leitungen des Blattes. Durch sie fließt Wasser hinein, und Zucker fließt hinaus.',
+    'Schaut auf den Boden am Weg. Ein Blatt, das nicht zu feucht und nicht zu dunkel ist, zeigt die Adern am besten. Bitte nur anschauen oder vorsichtig hochhalten und wieder hinlegen.',
+  ],
+  x: 'Die dicke Ader in der Mitte trägt die dünneren Seitenadern. Dazwischen liegt ein feines Netz.',
+  src: [FORST_GEN],
+});
+
+c('hornbeamFruit', {
+  label: 'Eine Hainbuchenfrucht',
+  m: [
+    'Das ist die Frucht einer Hainbuche. Ein kleines Nüsschen sitzt in einem Flügelblatt mit drei Zipfeln.',
+    'Sie ist an einer Hainbuche gewachsen und im Herbst oder Winter heruntergefallen.',
+    'Schaut unter Hainbuchen auf den Boden, auch an Hecken am Wegrand. Bitte nur anschauen. Das Nüsschen bleibt im Wald.',
+  ],
+  x: 'Das Flügelblatt hilft dem Wind, die Frucht ein Stück vom Baum weg zu tragen.',
+  src: ['LWF/LfL Bayern, Hainbuche (Früchte: Nüsschen mit dreilappigem Flügelblatt, Windverbreitung); wald.rlp.de, Hainbuche. Beide Quellen und die Formulierung sind vor Veröffentlichung noch durch ein Fachlektorat zu prüfen.'],
+});
+
+c('lindenFruit', {
+  label: 'Ein Lindenfruchtstand',
+  m: [
+    'Das ist ein kleiner Fruchtstand einer Linde. An einem Stiel hängen mehrere kleine runde Nüsschen. Ein langes schmales Flügelblatt gehört dazu.',
+    'Er ist im Sommer an einer Linde gewachsen. Im Herbst oder Winter fällt er herunter.',
+    'Schaut unter Linden auf den Boden. Bitte nur anschauen. Die Nüsschen bleiben im Wald.',
+  ],
+  x: 'Das Flügelblatt dreht sich beim Fallen. So kann der Wind den Fruchtstand ein Stück tragen.',
+  src: ['LWF/LfL Bayern, Winterlinde (Fruchtstand mit Hochblatt als Flugorgan, Nüsschen); weitere Sachbeschreibungen von waldwissen.net und forstlichen Fachseiten. Gegenprüfung durch Fachlektorat steht aus; Flugweiten werden bewusst nicht genannt.'],
+});
+
+c('alderCone', {
+  label: 'Ein Erlenzäpfchen',
+  m: [
+    'Das sind kleine dunkle Zäpfchen an einem Zweig. Sie wachsen an einem Laubbaum, der Erle.',
+    'Aus den Zäpfchen sind im Herbst kleine Samen herausgefallen. Die leeren Zäpfchen bleiben oft bis in den Winter am Zweig.',
+    'Schaut an Bächen, feuchten Stellen und Waldrändern nach Erlen. Bitte nur anschauen und nichts abbrechen.',
+  ],
+  x: 'Die Erle ist ein Laubbaum, aber ihre Früchte sehen aus wie winzige Zapfen. Sie sind verholzt.',
+  src: ['wald.rlp.de, Schwarzerle; SDW-Steckbrief Schwarzerle (Fruchtstände zapfenähnlich, verholzt, oft bis in den Winter am Baum); Gegenprüfung durch Fachlektorat steht aus.'],
+});
+
 export const concepts: Record<string, ConceptInfo> = Object.fromEntries(list.map((x) => [x.conceptId, x]));

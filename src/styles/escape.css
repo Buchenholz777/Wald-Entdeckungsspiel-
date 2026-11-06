@@ -84,6 +84,27 @@
 .slot-label { display: flex; flex-direction: column; font-size: 0.88rem; line-height: 1.2; min-width: 0; }
 .slot-label strong { font-family: var(--font-display); color: var(--forest); }
 .slot-sub { color: var(--muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+.slot-current { border-color: var(--forest); }
+.slot-full.slot-current { border-color: var(--ok); }
+.frags { display: flex; gap: 0.25rem; justify-content: center; margin-top: 0.2rem; }
+.frag { position: relative; width: 1.9rem; height: 1.9rem; border-radius: 9px; border: 2px dashed var(--sage-2); background: var(--paper); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.frag-no { font-size: 0.8rem; font-weight: 800; color: var(--muted); }
+.frag-full { border-style: solid; border-color: var(--ok); }
+.frag-full > :first-child:not(.frag-check) { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.85; }
+.frag-check { position: absolute; right: 0; bottom: 0; width: 0.95rem; height: 0.95rem; border-radius: 6px 0 0 0; background: var(--ok); color: #fff; display: flex; align-items: center; justify-content: center; }
+.frag-new { animation: frag-settle 0.8s ease-out; }
+@keyframes frag-settle { 0% { transform: scale(0.6); opacity: 0.2; } 60% { transform: scale(1.12); } 100% { transform: none; opacity: 1; } }
+.key-missing { margin: 0; color: var(--muted); font-size: 0.92rem; }
+.key-banner { margin: 0; padding: 0.4rem 0.8rem; border-radius: 999px; align-self: center; background: #fff3c4; border: 2px solid #e2cd96; font-family: var(--font-display); font-weight: 700; color: #5a3d08; animation: banner-in 0.5s ease-out; }
+@keyframes banner-in { from { transform: translateY(-6px); opacity: 0; } to { transform: none; opacity: 1; } }
+.esc-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.esc-bar .context-line { margin: 0; text-align: right; }
+.task-list { list-style: none; margin: 0.2rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.task-row { width: 100%; display: flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0.5rem; text-align: left; border-radius: 14px; border: 2px solid var(--sage-2); background: var(--paper); min-height: 3rem; }
+.task-row.is-active { border-color: var(--forest); }
+.task-row.status-done { border-color: var(--ok); background: #eef6e6; }
+.task-row-thumb { flex: none; width: 2.6rem; height: 2.6rem; border-radius: 10px; overflow: hidden; }
+.task-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: 0.92rem; line-height: 1.25; }
 .slot-new { animation: slot-pop 0.9s ease-out; }
 @keyframes slot-pop { 0% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(242, 193, 75, 0.9); } 40% { transform: scale(1.06); box-shadow: 0 0 0 10px rgba(242, 193, 75, 0.25); } 100% { transform: none; box-shadow: none; } }
 
@@ -147,10 +168,10 @@
 /* ---------- Ruhe: reduzierte Bewegung und „Bewegung aus“ zeigen dieselben Zustände ohne Bewegung ---------- */
 @media (prefers-reduced-motion: reduce) {
   .sand-top, .sand-bottom, .vault-lid, .vault-glow { transition: none; }
-  .sand-stream, .lock-glow, .slot-new, .vault-sparkles path { animation: none; }
+  .sand-stream, .lock-glow, .slot-new, .frag-new, .key-banner, .vault-sparkles path { animation: none; }
 }
 html[data-motion='off'] .sand-top, html[data-motion='off'] .sand-bottom, html[data-motion='off'] .vault-lid, html[data-motion='off'] .vault-glow { transition: none; }
-html[data-motion='off'] .sand-stream, html[data-motion='off'] .lock-glow, html[data-motion='off'] .slot-new, html[data-motion='off'] .vault-sparkles path { animation: none; }
+html[data-motion='off'] .sand-stream, html[data-motion='off'] .lock-glow, html[data-motion='off'] .slot-new, html[data-motion='off'] .frag-new, html[data-motion='off'] .key-banner, html[data-motion='off'] .vault-sparkles path { animation: none; }
 /* Unsichtbare Hintergrundanimationen pausieren (die fachliche Suchzeit läuft davon unabhängig weiter) */
 html[data-hidden='true'] .sand-stream, html[data-hidden='true'] .lock-glow { animation-play-state: paused; }
 .comb-more { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 1rem; }

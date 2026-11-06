@@ -932,6 +932,27 @@ const specs: Spec[] = [
     h: 'Bitte nur anschauen und nicht abbrechen. Ein kleiner Zweig am Weg genügt.', pre: 'grow',
     alt: 'Ein dünner Zweig mit langen, schlanken, spitzen rotbraunen Knospen, die abwechselnd rechts und links sitzen',
     tags: ['knospe', 'buche', 'spitz', 'zweig', 'kontext-buche'], feat: ['Lang und schlank', 'Spitz zulaufend', 'Rotbraune Schuppen'] },
+  /* ---- 145–149: Fundgruppen für Wald Escape (Fassung 4.1) ---- */
+  { n: 145, id: 'y-twig', c: 'yTwig', f: 'trees', e: 'W', min: 4, d: 1, k: 'shape', p: 'Finde einen kleinen Zweig, der sich wie ein Y gabelt.', a: 'O',
+    h: 'Ein Zweig am Weg genügt. Bitte nur anschauen und nichts abbrechen.', pre: 'grow',
+    alt: 'Ein brauner Zweig, der sich oben in zwei Äste gabelt, sodass er wie der Buchstabe Y aussieht, mit kleinen Knospen an den Spitzen',
+    tags: ['zweig', 'gabel', 'y-form', 'knospe'], feat: ['Ein Zweig teilt sich in zwei', 'Die Gabel sieht aus wie ein Y', 'Kleine Knospen an den Spitzen'] },
+  { n: 146, id: 'leaf-vein-net', c: 'veinNet', f: 'plants', e: 'W', s: 'FSH', min: 4, d: 1, k: 'pattern', p: 'Finde ein Blatt, auf dem man das Netz aus feinen Adern gut sieht.', a: 'O', as: { autumn: 'H' },
+    h: GROUND_LEAF_HINT, pre: 'float',
+    alt: 'Ein gelbgrünes Blatt, auf dem eine helle Mittelrippe, viele Seitenadern und ein feines Netz aus Verbindungen deutlich zu sehen sind',
+    tags: ['blatt', 'adern', 'netz', 'muster'], feat: ['Eine Ader in der Mitte', 'Viele Adern zum Rand', 'Feines Netz dazwischen'] },
+  { n: 147, id: 'hornbeam-fruit', c: 'hornbeamFruit', f: 'fruits', e: 'W', s: 'SHW', min: 4, d: 2, k: 'shape', p: 'Entdecke ein dreizipfliges Flügelblatt mit einem kleinen Nüsschen.', x: ['hornbeam'], a: 'O', as: { autumn: 'H' }, sm: true,
+    h: 'Nur anschauen. Das Nüsschen bleibt im Wald.', pre: 'float',
+    alt: 'Ein Hainbuchenfrüchtchen: ein hellgrünes Flügelblatt mit drei Zipfeln, der mittlere ist am längsten, und in der Mitte ein kleines braunes Nüsschen mit feinen Rippen',
+    tags: ['hainbuche', 'frucht', 'flügelblatt', 'nüsschen', 'kontext-hainbuche'], feat: ['Flügelblatt mit drei Zipfeln', 'Der mittlere Zipfel ist am längsten', 'Kleines gerilltes Nüsschen in der Mitte'] },
+  { n: 148, id: 'linden-fruit', c: 'lindenFruit', f: 'fruits', e: 'W', s: 'HW', min: 4, d: 2, k: 'shape', p: 'Finde ein langes Flügelblatt, an dem kleine runde Nüsschen hängen.', x: ['linden'], a: 'O', sm: true,
+    h: 'Nur anschauen. Die Nüsschen bleiben am Fruchtstand.', pre: 'float',
+    alt: 'Ein Lindenfruchtstand: ein langes, schmales, hellgrünes Flügelblatt, an dessen Stiel mehrere kleine runde, graubraune Nüsschen hängen',
+    tags: ['linde', 'fruchtstand', 'flügelblatt', 'nüsschen', 'kontext-linde'], feat: ['Langes schmales Flügelblatt', 'Stiel ist mit dem Blatt verwachsen', 'Kleine runde Nüsschen in einer Gruppe'] },
+  { n: 149, id: 'alder-cone', c: 'alderCone', f: 'fruits', e: 'W', s: 'FHW', min: 4, d: 1, k: 'shape', p: 'Entdecke kleine dunkle Zäpfchen an einem Laubbaum-Zweig.', x: ['alder'], a: 'O', as: { autumn: 'H' },
+    h: 'Nur anschauen. Das sind keine Nadelbaum-Zapfen, sie hängen an einem Laubbaum.', pre: 'sway',
+    alt: 'Ein dunkelbrauner Zweig mit mehreren kleinen, eiförmigen, verholzten Zäpfchen auf kurzen Stielen, jedes mit vielen kleinen Schuppen',
+    tags: ['erle', 'zäpfchen', 'fruchtstand', 'zweig', 'kontext-erle'], feat: ['Klein und eiförmig', 'Viele kleine Schuppen', 'Sitzt auf einem kurzen Stiel am Zweig'] },
 ];
 
 /**
@@ -973,6 +994,11 @@ const THEME_OF: Record<string, Theme[]> = {
 Object.assign(THEME_OF, {
   'needle-twig': ['growth', 'year'],
   'beech-bud': ['growth', 'year'],
+  'y-twig': ['growth', 'pattern'],
+  'leaf-vein-net': ['pattern', 'year'],
+  'hornbeam-fruit': ['growth', 'year'],
+  'linden-fruit': ['growth', 'year'],
+  'alder-cone': ['growth', 'year', 'water'],
   // Weniger Doppelzuordnungen: Ein Fund soll nicht in jeder Mission als „passend“ erzwungen werden.
   lichen: ['water', 'pattern'],
   mushroom: ['water', 'decay'],
@@ -1024,7 +1050,16 @@ const PATCH: Record<string, Partial<TaskTemplate>> = {
  * Eng verwandte Konzepte gelten für die Auswahl als eine Gruppe: Eine Mission zeigt nie zugleich die Eichel und den
  * leeren Eichelbecher, den ganzen und den abgenagten Zapfen, die Buchecker und ihre leere Hülle, die Haselnuss und die Nussschale.
  */
-export const CONCEPT_GROUP: Record<string, string> = { acornCup: 'acorn', gnawedCone: 'cone', beechHusk: 'beechnut', gnawedNut: 'hazelnut' };
+export const CONCEPT_GROUP: Record<string, string> = {
+  acornCup: 'acorn',
+  gnawedCone: 'cone',
+  beechHusk: 'beechnut',
+  gnawedNut: 'hazelnut',
+  // Kastanie und aufgeplatzte Fruchthülle sind derselbe Baum und derselbe Fund
+  husk: 'chestnut',
+  // Blatt mit Adernetz und Blattskelett zeigen beide das Netz der Adern: eine Mission wählt nur eines davon
+  leafSkeleton: 'veinNet',
+};
 export const conceptGroup = (conceptId: string): string => CONCEPT_GROUP[conceptId] ?? conceptId;
 
 function curateForest(t: TaskTemplate): TaskTemplate {
@@ -1038,4 +1073,4 @@ export const templates: TaskTemplate[] = specs.map(build).map(curateForest);
 export const templatesById: Record<string, TaskTemplate> = Object.fromEntries(templates.map((t) => [t.id, t]));
 
 /** Katalogstand für gespeicherte Runden. Bei inhaltlichen Änderungen erhöhen. */
-export const CATALOG_VERSION = '4.0.0';
+export const CATALOG_VERSION = '4.1.0';

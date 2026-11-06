@@ -466,6 +466,36 @@ export const extras: Record<string, ConceptExtras> = {
     my: 'Zeig mir die spitze Knospe.',
     mm: 'Wie sieht die Knospe aus: lang oder kurz, spitz oder rund? Sitzen die Knospen abwechselnd am Zweig?',
   },
+  yTwig: {
+    sy: 'Ein Zweig teilt sich in zwei.',
+    sm: 'An einer Gabel hat der Zweig zwei neue Triebe gebildet. So wird die Krone eines Baumes Jahr für Jahr dichter.',
+    my: 'Zeig mir die Gabel.',
+    mm: 'Wo teilt sich der Zweig? Wie viele Gabeln seht ihr, wenn ihr den Zweig entlangschaut?',
+  },
+  veinNet: {
+    sy: 'Die Adern sind wie kleine Straßen im Blatt.',
+    sm: 'Durch die Adern fließt Wasser ins Blatt und Zucker wieder hinaus. Sie halten das Blatt außerdem fest und flach.',
+    my: 'Zeig mir die dicke Ader.',
+    mm: 'Fahrt mit dem Finger in der Luft die Mittelader entlang. Wie viele Seitenadern zählt ihr auf einer Seite?',
+  },
+  hornbeamFruit: {
+    sy: 'Das Flügelblatt hilft beim Fliegen.',
+    sm: 'Das Flügelblatt hat drei Zipfel. Beim Fallen dreht es sich und kommt so ein Stück weiter vom Baum weg.',
+    my: 'Zeig mir die drei Zipfel.',
+    mm: 'Welcher Zipfel ist am längsten? Wo sitzt das Nüsschen?',
+  },
+  lindenFruit: {
+    sy: 'Das lange Blatt wirkt wie ein Flügel.',
+    sm: 'Das Flügelblatt und die Nüsschen hängen zusammen. Beim Fallen dreht sich der ganze Fruchtstand.',
+    my: 'Zeig mir das lange Flügelblatt.',
+    mm: 'Wie viele Nüsschen zählt ihr? Wo ist der Stiel mit dem Flügelblatt verwachsen?',
+  },
+  alderCone: {
+    sy: 'Ein Laubbaum mit kleinen Zapfen.',
+    sm: 'Die Erle ist ein Laubbaum, aber ihre Früchte sehen wie kleine Zapfen aus. Die Samen sind klein und leicht.',
+    my: 'Zeig mir die kleinen Zäpfchen.',
+    mm: 'Wie viele Zäpfchen sitzen nah beieinander am Zweig? Wodurch unterscheiden sie sich von Kiefern- oder Fichtenzapfen?',
+  },
   clover: {
     sy: 'Klee hat drei Blättchen.',
     sm: 'Klee hat drei Blättchen an einem Stiel. Seine Blüten werden gern von Hummeln und Bienen besucht.',

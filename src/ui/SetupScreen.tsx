@@ -6,9 +6,10 @@ import { AGE_GROUPS, FOREST, SEASONS, type AgeGroup } from '../domain/types';
 import { Illustration } from '../illustrations/Illustration';
 import { SeasonGlyph } from '../illustrations/scenes';
 import { Wordmark } from './Brand';
-import { EscapeDuration, EscapeIntro, EscapeResume, EscapeRules, escapeParams } from './escape/EscapeSetup';
+import { EscapeDuration, EscapeIntro, EscapeResume, EscapeRules, EscapeSizePicker, escapeMinutesFor, escapeParams, escapeSizeFor } from './escape/EscapeSetup';
 import { ModeSwitch } from './ModeSwitch';
-import { isLive } from '../domain/escape';
+import { isLive, progressOf, progressText } from '../domain/escape';
+import { FamilyHero } from './FamilyHero';
 import type { Escape } from './useEscape';
 import { GiftCard } from './GiftCard';
 import type { Game } from './useGame';
@@ -33,6 +34,8 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
   const { draft, patchDraft, round, archive } = game;
   const mode = game.settings.mode;
   const escParams = escapeParams(game);
+  const escSize = escapeSizeFor(game);
+  const escMinutes = escapeMinutesFor(game, escSize);
   const liveEsc = isLive(esc.mission) ? esc.mission : null;
   const [confirmEsc, setConfirmEsc] = useState(false);
   const [errors, setErrors] = useState<{ age?: string; empty?: string }>({});
@@ -128,6 +131,7 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
             ))}
           </ul>
         </div>
+        <FamilyHero />
         <h1 className="h1" tabIndex={-1} data-focus-target>
           <span className="h1-line">Der Wald steckt voller Wunder.</span> <span className="h1-line">Entdeckt sie zusammen!</span>
         </h1>
@@ -289,7 +293,12 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
       </section>
       )}
 
-      {mode === 'escape' && <EscapeDuration value={game.settings.escapeMinutes} onChange={(minutes) => game.saveSettings({ escapeMinutes: minutes })} />}
+      {mode === 'escape' && draft.age !== '2-3' && (
+        <EscapeSizePicker value={escSize} age={draft.age} onChange={(size) => game.saveSettings({ escapeSize: size, escapeMinutes: null })} />
+      )}
+      {mode === 'escape' && draft.age !== '2-3' && (
+        <EscapeDuration value={escMinutes} size={escSize} onChange={(minutes) => game.saveSettings({ escapeMinutes: minutes, escapeSize: escSize })} />
+      )}
 
       {mode !== 'detective' && (
       <section className="adjust">
@@ -409,7 +418,7 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
 
       <Modal open={confirmEsc} onClose={() => setConfirmEsc(false)} title="Neue Wald-Escape-Mission?" onHome={undefined}>
         <p>
-          Eure Wald-Escape-Mission läuft noch ({liveEsc?.keys.length ?? 0} von 3 Schlüsseln). Mit einer neuen Mission wird sie ersetzt. Waldschätze suchen bleibt unberührt.
+          Eure Wald-Escape-Mission läuft noch ({liveEsc ? progressText(progressOf(liveEsc)) : ''}). Mit einer neuen Mission wird sie ersetzt. Waldschätze suchen bleibt unberührt.
         </p>
         <div className="modal-actions">
           <button type="button" className="btn btn-primary" onClick={() => setConfirmEsc(false)}>

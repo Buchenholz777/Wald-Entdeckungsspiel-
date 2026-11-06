@@ -14,6 +14,7 @@ import {
   needsCelebration,
   openVault,
   openWithHelp,
+  progressOf,
   placeAt,
   placeSymbol,
   remainingAt,
@@ -138,8 +139,9 @@ export function useEscape(settings: Settings, saveSettings: (patch: Partial<Sett
       persistence.save(res.mission);
       adopt(res.mission);
       setNow(t);
-      saveSettings({ escapeMinutes: p.minutes, mode: 'escape' });
-      setAnnounce('Die Sanduhr läuft. Findet drei Waldschätze.');
+      // Größe und Suchzeit werden nur gespeichert, wenn jemand sie bewusst wählt (im Auswahlfeld). Ein Standardwert gilt nie als gewählt.
+      saveSettings({ mode: 'escape' });
+      setAnnounce(`Die Sanduhr läuft. Findet ${p.tasksPerKey * 3} Waldaufgaben.`);
       return { ok: true };
     },
     [persistence, adopt, saveSettings],
@@ -148,12 +150,14 @@ export function useEscape(settings: Settings, saveSettings: (patch: Partial<Sett
   const act = useMemo(
     () => ({
       found: (uid: string) => {
-        const before = ref.current?.keys.length ?? 0;
+        const beforeP = ref.current ? progressOf(ref.current) : null;
         const changed = commit((m, t) => addFound(m, uid, t));
         const m = ref.current;
-        if (changed && m) {
-          if (m.phase === 'combination') setAnnounce(m.outcome === 'onTime' ? 'Dritter Schlüssel! Alle drei Schlüssel rechtzeitig gefunden. Jetzt der Tresor.' : 'Dritter Schlüssel! Jetzt der Tresor.');
-          else if (m.keys.length > before) setAnnounce(`Schlüssel ${m.keys.length} von 3 gefunden.`);
+        if (changed && m && beforeP) {
+          const p = progressOf(m);
+          if (m.phase === 'combination') setAnnounce(m.outcome === 'onTime' ? 'Der dritte Schlüssel ist fertig! Alle Aufgaben rechtzeitig geschafft. Jetzt der Tresor.' : 'Der dritte Schlüssel ist fertig! Jetzt der Tresor.');
+          else if (p.keys > beforeP.keys) setAnnounce(`Schlüssel ${p.keys} geschafft! ${p.done} von ${p.required} Aufgaben.`);
+          else if (p.done > beforeP.done) setAnnounce(`Aufgabe geschafft: Fragment ${p.fragments} von ${p.tasksPerKey}. ${p.done} von ${p.required} Aufgaben.`);
           else setAnnounce('Eins gefunden.');
         }
       },

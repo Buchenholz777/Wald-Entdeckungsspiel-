@@ -3,13 +3,18 @@ import { giftsById } from '../../catalog/gifts';
 import type { KeyValueStore } from '../storage';
 import type { ContextTag, Season } from '../types';
 import { settle } from './clock';
-import { ESCAPE_PHASES, SYMBOLS, toEscapeMinutes, type EscapeMission, type PauseReason, type SymbolId, type TimeOutcome } from './types';
+import { ESCAPE_PHASES, KEY_COUNT, SYMBOLS, requiredTasks, toEscapeMinutes, type Completed, type EscapeMission, type PauseReason, type SymbolId, type TasksPerKey, type TimeOutcome } from './types';
 
 /**
  * Eigene, versionierte Speicherung der Escape-Mission (unabhängig von der Waldschätze-Runde: Beide Spielstände
  * bestehen nebeneinander). Beschädigter, fehlender oder gesperrter Speicher führt nie zum Absturz.
+ *
+ * Regelversionen: Eine Mission aus der früheren Fassung (Schema 1: ein Fund = ein Schlüssel, drei Funde) wird beim Laden NICHT
+ * auf sechs oder neun Aufgaben umgedeutet. Sie bleibt mit der Regel 1 (`rules: 1`, `tasksPerKey: 1`) kompatibel fortsetzbar, ihre Funde,
+ * Schlüssel, Zeit und Geschenke bleiben erhalten; abgeschlossene Missionen bekommen rückwirkend nichts. Neue Missionen verwenden Regel 2.
  */
 
+/** Version des Speicher-Umschlags (Schlüssel `entdeckerzeit:v1:escape`). */
 export const ESCAPE_VERSION = 1;
 export const ESCAPE_KEY = `entdeckerzeit:v${ESCAPE_VERSION}:escape`;
 
@@ -20,37 +25,67 @@ function isObj(v: unknown): v is Record<string, unknown> {
 }
 
 const SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter'];
-const CONTEXTS: ContextTag[] = ['conifers', 'maple', 'oak', 'chestnut', 'sand', 'gravel', 'shadow', 'puddles', 'snow', 'hazel', 'beech', 'mud', 'fern'];
+const CONTEXTS: ContextTag[] = ['conifers', 'maple', 'oak', 'chestnut', 'sand', 'gravel', 'shadow', 'puddles', 'snow', 'hazel', 'beech', 'mud', 'fern', 'hornbeam', 'linden', 'alder'];
 const OUTCOMES: TimeOutcome[] = ['open', 'onTime', 'expired'];
 const isSymbol = (v: unknown): v is SymbolId => typeof v === 'string' && (SYMBOLS as readonly string[]).includes(v);
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
+/** Drei verschiedene Schlüsselsymbole: die bekannten zuerst, der Rest deterministisch aus dem Vorrat. */
+function completeSymbols(known: SymbolId[]): SymbolId[] {
+  const out = [...new Set(known)].slice(0, KEY_COUNT);
+  for (const s of SYMBOLS) if (out.length < KEY_COUNT && !out.includes(s)) out.push(s);
+  return out;
+}
+
 /** Strukturprüfung. `null`, wenn die Mission nicht brauchbar ist. Bildangaben kommen immer aus dem aktuellen Katalog. */
 export function sanitizeEscape(raw: unknown): EscapeMission | null {
-  if (!isObj(raw) || raw.mode !== 'escape' || raw.v !== ESCAPE_VERSION) return null;
+  if (!isObj(raw) || raw.mode !== 'escape') return null;
+  const legacy = raw.v === 1;
+  if (raw.v !== 2 && !legacy) return null;
   if (typeof raw.id !== 'string' || !finite(raw.createdAt) || !finite(raw.updatedAt) || !finite(raw.rev) || !finite(raw.seed)) return null;
   if (raw.age !== '4-6' && raw.age !== '7-10') return null;
   if (!SEASONS.includes(raw.season as Season)) return null;
   if (!ESCAPE_PHASES.includes(raw.phase as never) || !OUTCOMES.includes(raw.outcome as TimeOutcome)) return null;
-  if (!Array.isArray(raw.tasks) || raw.tasks.length < 3 || raw.tasks.length > 5) return null;
+  if (!Array.isArray(raw.tasks) || raw.tasks.length < 3 || raw.tasks.length > 12) return null;
   if (!isObj(raw.clock) || !finite(raw.clock.durationMs) || !finite(raw.clock.remainingMs) || (raw.clock.resumedAt !== null && !finite(raw.clock.resumedAt))) return null;
-  if (!Array.isArray(raw.keys) || raw.keys.length > 3 || !Array.isArray(raw.input) || raw.input.length !== 3) return null;
+  if (!Array.isArray(raw.input) || raw.input.length !== 3) return null;
   for (const t of raw.tasks) {
     if (!isObj(t) || typeof t.uid !== 'string' || typeof t.prompt !== 'string' || typeof t.templateId !== 'string') return null;
     if (!finite(t.target) || t.target < 1 || t.target > 10 || !finite(t.found) || t.found < 0 || t.found > t.target) return null;
-    if (!['open', 'done'].includes(t.status as string) || !['single', 'count'].includes(t.mode as string) || !isSymbol(t.symbol)) return null;
+    if (!['open', 'done'].includes(t.status as string) || !['single', 'count'].includes(t.mode as string)) return null;
     if (!isObj(t.info) || typeof t.info.whatIsIt !== 'string' || typeof t.info.origin !== 'string' || typeof t.info.whereToLook !== 'string') return null;
     if (!isObj(t.image) || typeof t.image.illustrationKey !== 'string' || typeof t.image.alt !== 'string') return null;
   }
-  const tasks = raw.tasks as unknown as EscapeMission['tasks'];
-  const keys = raw.keys as unknown as EscapeMission['keys'];
-  for (const k of keys) if (!isObj(k) || typeof k.uid !== 'string' || !isSymbol(k.symbol) || !tasks.some((t) => t.uid === k.uid)) return null;
-  const input = (raw.input as unknown[]).map((s) => (isSymbol(s) ? s : null));
+  const rawTasks = raw.tasks as unknown as (EscapeMission['tasks'][number] & { symbol?: SymbolId })[];
+  const uids = new Set(rawTasks.map((t) => t.uid));
+
+  let tasksPerKey: TasksPerKey;
+  let completed: Completed[];
+  let keySymbols: SymbolId[];
+  if (legacy) {
+    // Frühere Fassung: `keys` (Reihenfolge des Erhalts) und je Karte ein Symbol
+    if (!Array.isArray(raw.keys) || raw.keys.length > 3) return null;
+    for (const k of raw.keys) if (!isObj(k) || typeof k.uid !== 'string' || !isSymbol(k.symbol) || !uids.has(k.uid)) return null;
+    const keys = raw.keys as unknown as { uid: string; symbol: SymbolId; templateId: string; at: number }[];
+    tasksPerKey = 1;
+    completed = keys.map((k) => ({ uid: k.uid, templateId: k.templateId, at: finite(k.at) ? k.at : 0 }));
+    keySymbols = completeSymbols([...keys.map((k) => k.symbol), ...rawTasks.map((t) => t.symbol).filter(isSymbol)]);
+  } else {
+    if (raw.tasksPerKey !== 1 && raw.tasksPerKey !== 2 && raw.tasksPerKey !== 3) return null;
+    if (!Array.isArray(raw.completed) || !Array.isArray(raw.keySymbols) || raw.keySymbols.length !== KEY_COUNT || !raw.keySymbols.every(isSymbol) || new Set(raw.keySymbols).size !== KEY_COUNT) return null;
+    tasksPerKey = raw.tasksPerKey as TasksPerKey;
+    if (raw.completed.length > requiredTasks(tasksPerKey)) return null;
+    for (const c of raw.completed) if (!isObj(c) || typeof c.uid !== 'string' || !uids.has(c.uid)) return null;
+    completed = (raw.completed as { uid: string; templateId?: unknown; at?: unknown }[]).map((c) => ({ uid: c.uid, templateId: typeof c.templateId === 'string' ? c.templateId : rawTasks.find((t) => t.uid === c.uid)!.templateId, at: finite(c.at) ? c.at : 0 }));
+    keySymbols = raw.keySymbols as SymbolId[];
+  }
+  if (new Set(completed.map((c) => c.uid)).size !== completed.length) return null;
+  const need = requiredTasks(tasksPerKey);
   const solution = Array.isArray(raw.solution) && raw.solution.length === 3 && raw.solution.every(isSymbol) ? (raw.solution as SymbolId[]) : null;
   const m = raw as unknown as EscapeMission;
-  const phase = m.phase;
-  if ((phase === 'combination' || phase === 'opened') && (keys.length < 3 || !solution)) return null;
-  const durationMs = toEscapeMinutes(m.minutes) * 60_000;
+  if ((m.phase === 'combination' || m.phase === 'opened') && (completed.length < need || !solution)) return null;
+  const minutes = toEscapeMinutes(m.minutes);
+  const durationMs = minutes * 60_000;
   // Gerätezeit-Murks oder ein verändertes Speicherfeld dürfen nie mehr Zeit schenken als die gewählte Dauer
   const remainingMs = Math.min(durationMs, Math.max(0, m.clock.remainingMs));
   // Ein offener Dialog existiert nach dem Neuladen nicht mehr: Die Pause bleibt als bewusste Pause stehen (die Uhr startet nie ungefragt).
@@ -59,31 +94,40 @@ export function sanitizeEscape(raw: unknown): EscapeMission | null {
   const g = (raw as { gift?: unknown }).gift;
   const gift = isObj(g) && typeof g.id === 'string' && giftsById[g.id] ? { id: g.id, celebrated: g.celebrated === true, at: finite(g.at) ? g.at : 0 } : undefined;
   const clues = Array.isArray(m.clues) && m.clues.length === 2 ? m.clues : null;
-  const activeIndex = finite(m.activeIndex) ? Math.max(0, Math.min(tasks.length - 1, Math.round(m.activeIndex))) : 0;
-  return {
+  const activeIndex = finite(m.activeIndex) ? Math.max(0, Math.min(rawTasks.length - 1, Math.round(m.activeIndex))) : 0;
+  const tasks = rawTasks.map((t) => {
+    const { symbol: _s, ...clean } = t;
+    void _s;
+    const tpl = templatesById[clean.templateId];
+    return (tpl ? { ...clean, image: tpl.image } : clean) as EscapeMission['tasks'][number];
+  });
+  const out: EscapeMission & { keys?: unknown } = {
     ...m,
-    minutes: toEscapeMinutes(m.minutes),
-    requiredKeys: 3,
+    v: 2,
+    rules: legacy ? 1 : 2,
+    minutes,
+    keyCount: 3,
+    tasksPerKey,
     context: Array.isArray(m.context) ? m.context.filter((c) => CONTEXTS.includes(c)) : [],
     excludedConcepts: Array.isArray(m.excludedConcepts) ? m.excludedConcepts.filter((c) => typeof c === 'string') : [],
     swaps: finite(m.swaps) ? m.swaps : 0,
     cardCount: finite(m.cardCount) ? m.cardCount : tasks.length,
     activeIndex,
     // Bildangaben (Schlüssel, Beschreibung, Merkmale) kommen immer aus dem aktuellen Katalog: Ein Update zeigt nie ein fehlendes oder veraltetes Bild.
-    tasks: tasks.map((t) => {
-      const tpl = templatesById[t.templateId];
-      return tpl ? { ...t, image: tpl.image } : t;
-    }),
-    keys,
+    tasks,
+    keySymbols,
+    completed,
     pauses,
     clock: { durationMs, remainingMs, resumedAt: m.clock.resumedAt },
     solution,
     clues,
-    input,
+    input: (raw.input as unknown[]).map((s) => (isSymbol(s) ? s : null)),
     hints: m.hints === 1 || m.hints === 2 ? m.hints : 0,
     helped: m.helped === true,
     gift,
   };
+  delete out.keys; // frühere Fassung
+  return out;
 }
 
 export type EscapeSaveResult = 'ok' | 'stale' | 'failed' | 'blocked';
@@ -94,7 +138,7 @@ export interface EscapePersistence {
   load(now: number): { status: EscapeLoadStatus; mission: EscapeMission | null };
   /** Speichert, es sei denn, im Speicher liegt ein jüngerer Stand (zum Beispiel aus einem anderen Tab). */
   save(m: EscapeMission | null): EscapeSaveResult;
-  /** Liest ohne Abrechnen den gespeicherten Stand (für den Vergleich mit anderen Tabs). */
+  /** Liest den gespeicherten Stand (für den Vergleich mit anderen Tabs). */
   peek(now: number): EscapeMission | null;
 }
 
@@ -115,7 +159,10 @@ export function createEscapePersistence(store: KeyValueStore | null): EscapePers
       if (!m) throw new Error('Struktur');
       return { status: 'ok', mission: settle(m, now) };
     } catch {
+      // Ein nicht lesbarer Stand wird nicht stillschweigend gelöscht, sondern zur Seite gelegt (nur zur Sicherheit, nie als neue Funde übernommen).
       try {
+        const text = store?.getItem(ESCAPE_KEY);
+        if (text) store?.setItem(`${ESCAPE_KEY}:unlesbar`, text);
         store?.removeItem(ESCAPE_KEY);
       } catch {
         /* ignorieren */

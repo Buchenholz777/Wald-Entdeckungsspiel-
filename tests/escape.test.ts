@@ -2,13 +2,18 @@ import { describe, expect, it } from 'vitest';
 import {
   ESCAPE_KEY,
   ESCAPE_PHASES,
+  ESCAPE_TEMPLATE_IDS,
+  SIZES,
   addFound,
   addPause,
   canPlayEscape,
   clearSlot,
+  completedTasks,
   continueFree,
+  countSolutions,
   createEscape,
   createEscapePersistence,
+  defaultSize,
   describeClue,
   describePool,
   endEarly,
@@ -16,45 +21,52 @@ import {
   formatClock,
   giveHint,
   invariantsHold,
+  isLegacy,
   isRunning,
-  keyTasks,
+  keyGroups,
   makeClues,
   markCelebrated,
+  minutesNote,
+  missingText,
   needsCelebration,
   openVault,
   openWithHelp,
   permutations,
   placeAt,
   placeSymbol,
+  poolGroups,
   poolNotice,
+  progressOf,
+  progressText,
   remainingAt,
   removePause,
+  requiredOf,
   resultLine,
+  ruleText,
   sanitizeEscape,
   settle,
   swapTask,
+  timeupText,
+  toEscapeMinutes,
   undoFound,
-  countSolutions,
-  ESCAPE_TEMPLATE_IDS,
-  poolGroups,
   type EscapeMission,
   type EscapeParams,
   type SymbolId,
 } from '../src/domain/escape';
-import { SYMBOLS } from '../src/domain/escape/types';
 import { seededRng } from '../src/domain/rng';
 import { generateRound } from '../src/domain/generator';
 import { isFullyFound } from '../src/domain/gift';
 import { addFound as addFoundRound } from '../src/domain/round';
-import { sanitizeSettings } from '../src/domain/storage';
+import { DEFAULT_SETTINGS, sanitizeSettings } from '../src/domain/storage';
 import type { KeyValueStore } from '../src/domain/storage';
-import { templatesById } from '../src/catalog/templates';
+import { conceptGroup, templatesById } from '../src/catalog/templates';
 import { giftsById } from '../src/catalog/gifts';
-import type { Season } from '../src/domain/types';
+import type { ContextTag, Season } from '../src/domain/types';
 
 const T0 = 1_700_000_000_000;
 const MIN = 60_000;
-const P = (over: Partial<EscapeParams> = {}): EscapeParams => ({ age: '7-10', season: 'autumn', seasonSource: 'auto', context: [], minutes: 15, ...over });
+const ALL_CTX: ContextTag[] = ['conifers', 'beech', 'oak', 'maple', 'hazel', 'chestnut', 'fern', 'hornbeam', 'linden', 'alder'];
+const P = (over: Partial<EscapeParams> = {}): EscapeParams => ({ age: '7-10', season: 'autumn', seasonSource: 'auto', context: [], minutes: 20, tasksPerKey: 2, ...over });
 
 function mission(over: Partial<EscapeParams> = {}, seed = 7, now = T0): EscapeMission {
   const r = createEscape(P(over), seed, now);
@@ -70,13 +82,29 @@ function finish(m: EscapeMission, index: number, at: number): EscapeMission {
   return x;
 }
 
+/** Erfüllt die ersten `n` Karten nacheinander im Abstand von einer Sekunde. */
+function finishN(m: EscapeMission, n: number, start = T0 + 1000): EscapeMission {
+  let x = m;
+  for (let i = 0; i < n; i++) x = finish(x, i, start + i * 1000);
+  return x;
+}
+
+/** Eine Mission (7–10), die mindestens eine Zählaufgabe mit Zielmenge über 1 enthält. */
+function withCountTask(): EscapeMission {
+  for (let seed = 1; seed < 200; seed++) {
+    const m = mission({ age: '7-10' }, seed);
+    if (m.tasks.some((t) => t.target > 1)) return m;
+  }
+  throw new Error('keine Zählaufgabe gefunden');
+}
+
 function memoryStore(): KeyValueStore & { data: Map<string, string> } {
   const data = new Map<string, string>();
   return { data, getItem: (k) => data.get(k) ?? null, setItem: (k, v) => void data.set(k, v), removeItem: (k) => void data.delete(k) };
 }
 
-describe('Wald Escape: Altersfreigabe und Kandidaten', () => {
-  it('ab 4 Jahren; 2–3 Jahre starten keine Zeitmission', () => {
+describe('Wald Escape: Altersfreigabe, Größen und Kandidaten', () => {
+  it('ab 4 Jahren; 2–3 Jahre starten keine Zeitmission (auch das abgebildete Kleinkind ändert das nicht)', () => {
     expect(canPlayEscape('2-3')).toBe(false);
     expect(canPlayEscape(null)).toBe(false);
     expect(canPlayEscape('4-6')).toBe(true);
@@ -88,28 +116,52 @@ describe('Wald Escape: Altersfreigabe und Kandidaten', () => {
       const t = templatesById[id];
       expect(t, id).toBeDefined();
       expect(t.retired, id).toBeFalsy();
-      expect(['animals', 'tracks', 'fungi']).not.toContain(t.family);
+      expect(t.family, id).not.toBe('animals');
+      // Spuren und Pilze nur als ausdrücklich seltene Alternativen (Nussschale, abgenagter Zapfen, Baumpilz am Holz), nie als Pflicht
+      if (['tracks', 'fungi'].includes(t.family)) expect(['gnawed-nut', 'gnawed-cone', 'bracket-fungus'], id).toContain(id);
       expect(t.completionMode, id).not.toBe('compare');
     }
   });
 
-  it('fünf verschiedene Konzepte, Alters-/Saison-/Kontextfilter und eigene Symbole je Karte (feste Seeds)', () => {
+  it('die neuen Motive sind vollständig: Vorlage, Kontextbindung und Quelle', () => {
+    for (const id of ['y-twig', 'leaf-vein-net', 'hornbeam-fruit', 'linden-fruit', 'alder-cone']) expect(ESCAPE_TEMPLATE_IDS).toContain(id);
+    expect(templatesById['hornbeam-fruit'].requiredContext).toEqual(['hornbeam']);
+    expect(templatesById['linden-fruit'].requiredContext).toEqual(['linden']);
+    expect(templatesById['alder-cone'].requiredContext).toEqual(['alder']);
+    expect(templatesById['y-twig'].requiredContext).toEqual([]);
+  });
+
+  it('Größen: klein 2 je Schlüssel = 6 Aufgaben (8 Karten angestrebt), groß 3 je Schlüssel = 9 (12 Karten); Standard nach Alter; immer drei Schlüssel', () => {
+    expect(SIZES.small).toMatchObject({ tasksPerKey: 2, required: 6, offered: 8, defaultMinutes: 20 });
+    expect(SIZES.large).toMatchObject({ tasksPerKey: 3, required: 9, offered: 12, defaultMinutes: 30 });
+    expect(defaultSize('4-6')).toBe('small');
+    expect(defaultSize('7-10')).toBe('large');
+    expect(ruleText(2)).toBe('2 Entdeckungen pro Schlüssel · 3 Schlüssel · insgesamt 6 Aufgaben');
+    expect(ruleText(3)).toBe('3 Entdeckungen pro Schlüssel · 3 Schlüssel · insgesamt 9 Aufgaben');
+  });
+
+  it('die Mission bietet im Herbst 8 bzw. 12 Karten mit lauter verschiedenen Konzeptgruppen, Alters-, Saison- und Kontextfilter (feste Seeds)', () => {
     for (const age of ['4-6', '7-10'] as const) {
       for (const season of ['spring', 'autumn', 'winter'] as Season[]) {
-        for (let seed = 1; seed <= 25; seed++) {
-          const m = mission({ age, season }, seed);
-          expect(m.tasks.length, `${age}/${season}/${seed}`).toBe(5);
-          expect(new Set(m.tasks.map((t) => t.conceptId)).size).toBe(5);
-          expect(new Set(m.tasks.map((t) => t.symbol)).size).toBe(5);
-          for (const t of m.tasks) {
-            const tpl = templatesById[t.templateId];
-            expect(tpl.ageGroups).toContain(age);
-            expect(tpl.seasons).toContain(season);
-            expect(tpl.requiredContext).toEqual([]); // ohne bestätigten Kontext nie ein Kontext-Fund
-            expect(t.target).toBeLessThanOrEqual(age === '4-6' ? 2 : 3);
-            expect(t.status).toBe('open');
+        for (const tasksPerKey of [2, 3] as const) {
+          for (let seed = 1; seed <= 12; seed++) {
+            const m = mission({ age, season, tasksPerKey }, seed);
+            const need = tasksPerKey * 3;
+            expect(m.tasks.length, `${age}/${season}/${tasksPerKey}/${seed}`).toBeGreaterThanOrEqual(need);
+            expect(m.tasks.length).toBeLessThanOrEqual(tasksPerKey === 3 ? 12 : 8);
+            expect(new Set(m.tasks.map((t) => conceptGroup(t.conceptId))).size).toBe(m.tasks.length);
+            expect(m.keySymbols.length).toBe(3);
+            expect(new Set(m.keySymbols).size).toBe(3);
+            for (const t of m.tasks) {
+              const tpl = templatesById[t.templateId];
+              expect(tpl.ageGroups).toContain(age);
+              expect(tpl.seasons).toContain(season);
+              expect(tpl.requiredContext).toEqual([]); // ohne bestätigten Kontext nie ein Kontext-Fund
+              expect(t.target).toBeLessThanOrEqual(age === '4-6' ? 2 : 3);
+              expect(t.status).toBe('open');
+            }
+            expect(invariantsHold(m)).toBe(true);
           }
-          expect(invariantsHold(m)).toBe(true);
         }
       }
     }
@@ -118,58 +170,114 @@ describe('Wald Escape: Altersfreigabe und Kandidaten', () => {
   it('dieselbe Auswahl mit demselben Seed ergibt dieselbe Mission (nicht beim Rendern neu gelost)', () => {
     const a = mission({}, 11);
     const b = mission({}, 11);
-    expect(a.tasks.map((t) => [t.templateId, t.symbol, t.target])).toEqual(b.tasks.map((t) => [t.templateId, t.symbol, t.target]));
+    expect(a.tasks.map((t) => [t.templateId, t.target])).toEqual(b.tasks.map((t) => [t.templateId, t.target]));
+    expect(a.keySymbols).toEqual(b.keySymbols);
   });
 
-  it('bestätigte Baumarten erweitern den Pool (Kontext ist nie Voraussetzung, aber erlaubt)', () => {
+  it('bestätigte Baumarten erweitern den Pool', () => {
     const plain = describePool(P());
-    const rich = describePool(P({ context: ['maple', 'oak', 'chestnut', 'fern'] }));
+    const rich = describePool(P({ context: ALL_CTX }));
     expect(rich.groups).toBeGreaterThan(plain.groups);
   });
 
-  it('kleine Pools werden ehrlich behandelt: 4 Karten sagen es, unter drei startet nichts, das Ziel bleibt drei Schlüssel', () => {
-    const summer = describePool(P({ season: 'summer' }));
-    expect(summer.cards).toBe(4);
-    expect(poolNotice(summer)).toBe('Heute stehen 4 Waldschätze zur Wahl. Ihr braucht 3.');
-    const m = mission({ season: 'summer' }, 3);
-    expect(m.tasks.length).toBe(4);
-    expect(m.requiredKeys).toBe(3);
-    // drei Konzepte: kein Auffüllen, ausdrückliche Erklärung
-    expect(poolNotice({ cards: 3, groups: 3 })).toMatch(/genau 3/);
-    expect(poolNotice({ cards: 3, groups: 3 })).toMatch(/alle drei/);
-    // unter drei: keine Mission
-    expect(createEscape(P({ season: 'summer' }), 1, T0).ok).toBe(true);
-    expect(poolNotice({ cards: 0, groups: 2 })).toMatch(/zu wenige/);
+  it('ehrliche Kartenzahlen: eine große Mission mit weniger als neun Konzepten wird nie still verkleinert', () => {
+    // Sommer ohne Baumangaben: acht Konzepte. Die kleine Mission geht, die große nicht.
+    const smallSummer = describePool(P({ season: 'summer', tasksPerKey: 2 }));
+    expect(smallSummer.cards).toBe(8);
+    expect(poolNotice(smallSummer, 8)).toBeNull();
+    const largeSummer = describePool(P({ season: 'summer', tasksPerKey: 3 }));
+    expect(largeSummer.cards).toBe(0);
+    expect(largeSummer.groups).toBeLessThan(9);
+    expect(createEscape(P({ season: 'summer', tasksPerKey: 3 }), 1, T0).ok).toBe(false);
+    expect(poolNotice(largeSummer, 12)).toMatch(/braucht ihr 9/);
+    // Mit bestätigten Baumarten wird sie möglich.
+    expect(createEscape(P({ season: 'summer', tasksPerKey: 3, context: ALL_CTX }), 1, T0).ok).toBe(true);
+    // Genau neun Konzepte: alle neun werden gebraucht und das wird gesagt.
+    const exact = describePool(P({ season: 'spring', tasksPerKey: 3 }));
+    expect(exact.cards).toBe(9);
+    expect(poolNotice(exact, 12)).toBe('Heute stehen genau 9 Aufgaben zur Wahl. Ihr braucht alle 9.');
+    const m = mission({ season: 'spring', tasksPerKey: 3 }, 2);
+    expect(m.tasks.length).toBe(9);
+    expect(requiredOf(m)).toBe(9);
+    // Zwischen neun und zwölf: ehrlich weniger Karten
+    expect(poolNotice({ cards: 11, groups: 11, required: 9 }, 12)).toBe('Heute stehen 11 Aufgaben zur Wahl. Ihr braucht 9.');
   });
 
-  it('mit einem leeren Katalog entsteht keine Mission statt einer geschwächten', () => {
+  it('mit einem leeren Pool entsteht keine Mission statt einer geschwächten', () => {
     expect(poolGroups([])).toBe(0);
     expect(escapePool(P({ season: 'summer' })).length).toBeGreaterThan(0);
   });
 });
 
+describe('Wald Escape: Fortschrittsrechnung (eine zentrale Funktion)', () => {
+  const at = (tpk: 2 | 3, done: number) => progressOf({ tasksPerKey: tpk, completed: Array.from({ length: done }, (_, i) => ({ uid: `u${i}`, templateId: 't', at: i })) });
+
+  it('kleine Mission (6 Aufgaben): Fragmente und Schlüssel bei jedem Stand', () => {
+    expect([0, 1, 2, 3, 4, 5, 6].map((n) => [at(2, n).keys, at(2, n).fragments])).toEqual([[0, 0], [0, 1], [1, 0], [1, 1], [2, 0], [2, 1], [3, 0]]);
+    expect(at(2, 6).complete).toBe(true);
+    expect(at(2, 5).complete).toBe(false);
+    expect(at(2, 5)).toMatchObject({ done: 5, required: 6, missing: 1 });
+  });
+
+  it('große Mission (9 Aufgaben): Fragmente und Schlüssel bei jedem Stand', () => {
+    expect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => [at(3, n).keys, at(3, n).fragments])).toEqual([[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2], [3, 0]].slice(0, 9).concat([[3, 0]]));
+    expect(at(3, 8)).toMatchObject({ keys: 2, fragments: 2, missing: 1, complete: false });
+    expect(at(3, 9).complete).toBe(true);
+  });
+
+  it('Texte: „4 von 6 Aufgaben · 2 von 3 Schlüsseln“ und „fehlt noch 1 Entdeckung“', () => {
+    expect(progressText(at(2, 4))).toBe('4 von 6 Aufgaben · 2 von 3 Schlüsseln');
+    expect(missingText(at(2, 5))).toBe('Für den nächsten Schlüssel fehlt noch 1 Entdeckung.');
+    expect(missingText(at(3, 3))).toBe('Für den nächsten Schlüssel fehlen noch 3 Entdeckungen.');
+    expect(missingText(at(2, 6))).toMatch(/Alle drei Schlüssel/);
+  });
+
+  it('Zeitablauf-Text nennt echte Zahlen und beschreibt Teilfortschritt ohne zu übertreiben', () => {
+    expect(timeupText(at(2, 5))).toBe('Ihr habt 5 von 6 Aufgaben und 2 von 3 Schlüsseln geschafft. Der nächste Schlüssel ist schon halb fertig!');
+    expect(timeupText(at(3, 7))).toBe('Ihr habt 7 von 9 Aufgaben und 2 von 3 Schlüsseln geschafft. Der nächste Schlüssel ist schon zu einem Drittel fertig!');
+    expect(timeupText(at(3, 8))).toMatch(/zu zwei Dritteln fertig/);
+    expect(timeupText(at(2, 4))).toBe('Ihr habt 4 von 6 Aufgaben und 2 von 3 Schlüsseln geschafft. Der nächste Schlüssel wartet noch auf seine erste Entdeckung.');
+  });
+
+  it('keyGroups: drei Plätze, Fragmente in der Reihenfolge des Abschlusses, Schlüssel erst bei voller Gruppe', () => {
+    const m = finishN(mission(), 3);
+    const g = keyGroups(m);
+    expect(g.length).toBe(3);
+    expect(g.map((x) => x.fragments.length)).toEqual([2, 1, 0]);
+    expect(g.map((x) => x.complete)).toEqual([true, false, false]);
+    expect(g[0].fragments.map((f) => f.uid)).toEqual([m.tasks[0].uid, m.tasks[1].uid]);
+    expect(g.map((x) => x.symbol)).toEqual(m.keySymbols);
+  });
+});
+
 describe('Wald Escape: Uhr mit eigener Zeit', () => {
-  it('beginnt erst beim Erzeugen mit 10, 15 oder 20 Minuten', () => {
-    for (const minutes of [10, 15, 20] as const) {
+  it('beginnt erst beim Erzeugen; Zeitwahl 10/15/20/30 mit Standard 20 und ehrlicher Kennzeichnung', () => {
+    for (const minutes of [10, 15, 20, 30] as const) {
       const m = mission({ minutes });
       expect(m.clock.durationMs).toBe(minutes * MIN);
       expect(remainingAt(m, T0)).toBe(minutes * MIN);
       expect(remainingAt(m, T0 + 5 * MIN)).toBe(minutes * MIN - 5 * MIN);
     }
+    expect(toEscapeMinutes(null)).toBe(20);
+    expect(toEscapeMinutes(7)).toBe(20);
+    expect(toEscapeMinutes(30)).toBe(30);
+    expect(minutesNote(10, 6)).toBe('Bewusst kurz, für 6 Aufgaben sehr knapp');
+    expect(minutesNote(10, 9)).toBe('Bewusst kurz, für 9 Aufgaben sehr knapp');
+    expect(minutesNote(15, 6)).toBe('Zügig');
+    expect(minutesNote(20, 6)).toBe('Empfohlen für 6 Aufgaben');
+    expect(minutesNote(30, 9)).toBe('Empfohlen für 9 Aufgaben');
   });
 
   it('rechnet aus Zeitpunkten: ein verzögerter oder fehlender Tick ändert nichts', () => {
-    const m = mission();
-    // 7 Minuten ohne jeden Zwischenschritt (zum Beispiel gesperrtes Telefon)
+    const m = mission({ minutes: 15 });
     expect(remainingAt(m, T0 + 7 * MIN)).toBe(8 * MIN);
-    // viele kleine Schritte ergeben dasselbe
     let x = m;
     for (let s = 1; s <= 420; s++) x = settle(x, T0 + s * 1000);
     expect(remainingAt(x, T0 + 420_000)).toBe(8 * MIN);
   });
 
   it('Pause hält die Uhr an und Weitersuchen nimmt dieselbe Restzeit wieder auf', () => {
-    let m = mission();
+    let m = mission({ minutes: 15 });
     m = addPause(m, 'manual', T0 + 2 * MIN);
     expect(isRunning(m)).toBe(false);
     expect(remainingAt(m, T0 + 60 * MIN)).toBe(13 * MIN);
@@ -179,7 +287,7 @@ describe('Wald Escape: Uhr mit eigener Zeit', () => {
   });
 
   it('überlagerte Pausengründe: Schließen eines Dialogs startet die Uhr nicht, solange noch ein Grund besteht', () => {
-    let m = mission();
+    let m = mission({ minutes: 15 });
     m = addPause(m, 'manual', T0 + MIN);
     m = addPause(m, 'dialog', T0 + MIN);
     m = removePause(m, 'dialog', T0 + 5 * MIN);
@@ -187,14 +295,14 @@ describe('Wald Escape: Uhr mit eigener Zeit', () => {
     expect(remainingAt(m, T0 + 30 * MIN)).toBe(14 * MIN);
     m = addPause(m, 'menu', T0 + 30 * MIN);
     m = removePause(m, 'manual', T0 + 30 * MIN);
-    expect(isRunning(m)).toBe(false); // Hauptmenü hält weiter
+    expect(isRunning(m)).toBe(false);
     m = removePause(m, 'menu', T0 + 31 * MIN);
     expect(isRunning(m)).toBe(true);
     expect(remainingAt(m, T0 + 31 * MIN)).toBe(14 * MIN);
   });
 
   it('doppelte Pausenereignisse und schnelle Wechsel erzeugen weder Zeit noch Fehler', () => {
-    let m = mission();
+    let m = mission({ minutes: 15 });
     for (let i = 0; i < 6; i++) {
       m = addPause(m, 'dialog', T0 + MIN);
       m = addPause(m, 'dialog', T0 + MIN);
@@ -219,9 +327,7 @@ describe('Wald Escape: Uhr mit eigener Zeit', () => {
 
   it('Gerätezeit rückwärts schenkt keine Zeit und lässt nie mehr als die Startdauer zu', () => {
     const m = mission({ minutes: 10 });
-    const back = remainingAt(m, T0 - 5 * MIN);
-    expect(back).toBeLessThanOrEqual(10 * MIN);
-    expect(back).toBe(10 * MIN);
+    expect(remainingAt(m, T0 - 5 * MIN)).toBe(10 * MIN);
     const s = settle(m, T0 - 5 * MIN);
     expect(remainingAt(s, T0 - 5 * MIN + 1000)).toBe(10 * MIN - 1000);
   });
@@ -229,7 +335,7 @@ describe('Wald Escape: Uhr mit eigener Zeit', () => {
   it('Hauptmenü (Pause) und Reload: laufende Suche rechnet die echte Zeit ab, eine Pause bleibt eine Pause', () => {
     const store = memoryStore();
     const p = createEscapePersistence(store);
-    let m = mission();
+    let m = mission({ minutes: 15 });
     expect(p.save(m)).toBe('ok');
     const running = p.load(T0 + 4 * MIN);
     expect(running.status).toBe('ok');
@@ -254,115 +360,143 @@ describe('Wald Escape: Uhr mit eigener Zeit', () => {
   it('ein offener Dialog ist nach dem Neuladen eine bewusste Pause (die Uhr startet nie ungefragt)', () => {
     const store = memoryStore();
     const p = createEscapePersistence(store);
-    p.save(addPause(mission(), 'dialog', T0 + MIN));
+    p.save(addPause(mission({ minutes: 15 }), 'dialog', T0 + MIN));
     const m = p.load(T0 + 20 * MIN).mission!;
     expect(m.pauses).toEqual(['manual']);
     expect(remainingAt(m, T0 + 20 * MIN)).toBe(14 * MIN);
   });
 });
 
-describe('Wald Escape: Schlüssel und Zeitergebnis', () => {
-  it('beliebige drei von fünf Karten liefern genau drei Schlüssel; zwei reichen nicht; die übrigen bleiben freiwillig', () => {
+describe('Wald Escape: Fragmente, Schlüssel und Zeitergebnis', () => {
+  it('kleine Mission: jede erledigte Karte ist ein Fragment; erst die 6. beendet die Suche; drei Funde lösen nichts aus', () => {
     const m = mission();
-    let x = finish(m, 4, T0 + 10_000);
-    expect(x.keys.length).toBe(1);
-    x = finish(x, 1, T0 + 20_000);
-    expect(x.keys.length).toBe(2);
-    expect(x.phase).toBe('searching');
-    x = finish(x, 3, T0 + 30_000);
-    expect(x.keys.length).toBe(3);
+    let x = m;
+    const seen: [number, number, string][] = [];
+    for (let i = 0; i < 6; i++) {
+      x = finish(x, i, T0 + 10_000 + i * 1000);
+      const p = progressOf(x);
+      seen.push([p.keys, p.fragments, x.phase]);
+    }
+    expect(seen).toEqual([
+      [0, 1, 'searching'],
+      [1, 0, 'searching'],
+      [1, 1, 'searching'],
+      [2, 0, 'searching'],
+      [2, 1, 'searching'],
+      [3, 0, 'combination'],
+    ]);
+    expect(x.outcome).toBe('onTime');
+    expect(invariantsHold(x)).toBe(true);
+    // Die alte Regel „3 Funde = 3 Schlüssel“ greift nicht: nach 3 Funden läuft die Sanduhr weiter.
+    const three = finishN(m, 3);
+    expect(three.phase).toBe('searching');
+    expect(isRunning(three)).toBe(true);
+    // Karten dürfen in beliebiger Reihenfolge erledigt werden; die Reihenfolge der Abschlüsse bestimmt die Gruppen.
+    const mixed = finish(finish(m, 5, T0 + 1000), 2, T0 + 2000);
+    expect(keyGroups(mixed)[0].fragments.map((f) => f.uid)).toEqual([m.tasks[5].uid, m.tasks[2].uid]);
+  });
+
+  it('große Mission: neun Aufgaben, drei je Schlüssel; erst die 9. beendet die Suche', () => {
+    const m = mission({ tasksPerKey: 3 });
+    let x = m;
+    for (let i = 0; i < 8; i++) {
+      x = finish(x, i, T0 + 10_000 + i * 1000);
+      expect(x.phase).toBe('searching');
+    }
+    expect(progressOf(x)).toMatchObject({ done: 8, keys: 2, fragments: 2, missing: 1 });
+    x = finish(x, 8, T0 + 30_000);
     expect(x.phase).toBe('combination');
-    expect(x.tasks.filter((t) => t.status === 'open').length).toBe(2);
-    expect(x.keys.map((k) => k.symbol)).toEqual([m.tasks[4].symbol, m.tasks[1].symbol, m.tasks[3].symbol]);
+    expect(progressOf(x).keys).toBe(3);
     expect(invariantsHold(x)).toBe(true);
   });
 
-  it('Doppeltippen auf eine fertige Karte gibt keinen weiteren Schlüssel', () => {
+  it('Doppeltippen auf eine fertige Karte gibt kein weiteres Fragment', () => {
     let m = mission();
     m = finish(m, 0, T0 + 1000);
     const again = finish(m, 0, T0 + 2000);
-    expect(again.keys.length).toBe(1);
+    expect(progressOf(again).done).toBe(1);
     expect(again.tasks).toEqual(m.tasks);
-    expect(again.keys).toEqual(m.keys);
+    expect(again.completed).toEqual(m.completed);
   });
 
-  it('Zählaufgaben zählen jeden Tipp einmal und höchstens bis zur Zielmenge', () => {
-    const m = mission({ age: '7-10' }, 5);
+  it('Zählaufgabe oder Vergleich ist erst nach vollständiger Erledigung genau ein Fragment', () => {
+    const m = withCountTask();
     const i = m.tasks.findIndex((t) => t.target > 1);
-    if (i >= 0) {
-      let x = addFound(m, m.tasks[i].uid, T0);
-      expect(x.tasks[i].found).toBe(1);
-      expect(x.keys.length).toBe(m.tasks[i].target === 1 ? 1 : 0);
-      x = finish(x, i, T0);
-      expect(x.tasks[i].found).toBe(m.tasks[i].target);
-      expect(x.keys.length).toBe(1);
-    }
+    expect(i).toBeGreaterThanOrEqual(0);
+    let x = addFound(m, m.tasks[i].uid, T0);
+    expect(x.tasks[i].found).toBe(1);
+    expect(progressOf(x).done).toBe(0); // Teilfunde zählen kein Fragment
+    x = finish(x, i, T0);
+    expect(x.tasks[i].found).toBe(m.tasks[i].target);
+    expect(progressOf(x).done).toBe(1);
   });
 
-  it('der dritte Fund knapp vor null ist rechtzeitig und friert die echte Restzeit ein', () => {
+  it('die sechste Aufgabe knapp vor null ist rechtzeitig und friert die echte Restzeit ein', () => {
     let m = mission({ minutes: 10 });
-    m = finish(m, 0, T0 + 1000);
-    m = finish(m, 1, T0 + 2000);
-    m = finish(m, 2, T0 + 10 * MIN - 1);
+    m = finishN(m, 5);
+    m = finish(m, 5, T0 + 10 * MIN - 1);
     expect(m.phase).toBe('combination');
     expect(m.outcome).toBe('onTime');
     expect(m.clock.resumedAt).toBeNull();
-    expect(remainingAt(m, T0 + 50 * MIN)).toBe(1); // die Uhr steht: das Rätsel kostet keine Suchzeit
+    expect(remainingAt(m, T0 + 50 * MIN)).toBe(1);
   });
 
-  it('der dritte Fund bei oder nach null ist nicht rechtzeitig; der Fund selbst zählt aber', () => {
+  it('die neunte Aufgabe bei oder nach null ist nicht rechtzeitig; die Aufgabe selbst zählt aber', () => {
     for (const at of [T0 + 10 * MIN, T0 + 10 * MIN + 5000]) {
-      let m = mission({ minutes: 10 });
-      m = finish(m, 0, T0 + 1000);
-      m = finish(m, 1, T0 + 2000);
-      m = finish(m, 2, at);
+      let m = mission({ minutes: 10, tasksPerKey: 3 });
+      m = finishN(m, 8);
+      m = finish(m, 8, at);
       expect(m.outcome).toBe('expired');
       expect(m.phase).toBe('combination');
-      expect(m.keys.length).toBe(3);
+      expect(progressOf(m).keys).toBe(3);
     }
+  });
+
+  it('die fünfte Aufgabe rechtzeitig, die sechste zu spät: das Ergebnis richtet sich nach der letzten', () => {
+    let m = mission({ minutes: 10 });
+    m = finishN(m, 5, T0 + 1000);
+    m = finish(m, 5, T0 + 10 * MIN + 1);
+    expect(m.outcome).toBe('expired');
   });
 
   it('die Kombinationsphase verbraucht keine Suchzeit: lange Beschäftigung ändert das Ergebnis nicht', () => {
     let m = mission({ minutes: 10 });
-    m = finish(m, 0, T0 + 1000);
-    m = finish(m, 1, T0 + 2000);
-    m = finish(m, 2, T0 + 3000);
+    m = finishN(m, 6);
     const later = settle(m, T0 + 600 * MIN);
     expect(later.phase).toBe('combination');
     expect(later.outcome).toBe('onTime');
   });
 
-  it('Zeit abgelaufen: Funde bleiben, „Ohne Zeitdruck weitersuchen“ gibt keine neue Zeit und nie das Rechtzeitig-Ergebnis', () => {
+  it('Zeit abgelaufen: Fortschritt bleibt, „Ohne Zeitdruck weitersuchen“ gibt keine neue Zeit und nie das Rechtzeitig-Ergebnis', () => {
     let m = mission({ minutes: 10 });
-    m = finish(m, 0, T0 + 1000);
-    m = finish(m, 1, T0 + 2000);
+    m = finishN(m, 5);
     m = settle(m, T0 + 11 * MIN);
     expect(m.phase).toBe('timeup');
-    expect(m.keys.length).toBe(2);
+    expect(progressOf(m)).toMatchObject({ done: 5, keys: 2, fragments: 1 });
     m = continueFree(m, T0 + 12 * MIN);
     expect(m.phase).toBe('free');
     expect(isRunning(m)).toBe(false);
     expect(remainingAt(m, T0 + 99 * MIN)).toBe(0);
-    m = finish(m, 3, T0 + 20 * MIN);
+    m = finish(m, 5, T0 + 20 * MIN);
     expect(m.phase).toBe('combination');
     expect(m.outcome).toBe('expired');
   });
 
-  it('keine unmöglichen Zustände: Phasen und Ergebnis passen zusammen (viele zufällige Verläufe)', () => {
+  it('keine unmöglichen Zustände: Phasen und Ergebnis passen zusammen (viele zufällige Verläufe, beide Größen)', () => {
     for (let seed = 1; seed <= 60; seed++) {
       const rng = seededRng(seed);
-      let m = mission({ minutes: 10 }, seed);
+      let m = mission({ minutes: 10, tasksPerKey: seed % 2 ? 2 : 3 }, seed);
       let t = T0;
-      for (let step = 0; step < 40 && m.phase !== 'opened'; step++) {
+      for (let step = 0; step < 60 && m.phase !== 'opened'; step++) {
         t += Math.floor(rng() * 90_000);
         const r = rng();
         const i = Math.floor(rng() * m.tasks.length);
-        if (r < 0.4) m = addFound(m, m.tasks[i].uid, t);
+        if (r < 0.45) m = addFound(m, m.tasks[i].uid, t);
         else if (r < 0.55) m = undoFound(m, m.tasks[i].uid, t);
         else if (r < 0.65) m = addPause(m, 'manual', t);
-        else if (r < 0.75) m = removePause(m, 'manual', t);
-        else if (r < 0.8) m = continueFree(m, t);
-        else if (r < 0.85) m = swapTask(m, m.tasks[i].uid, t) ?? m;
+        else if (r < 0.72) m = removePause(m, 'manual', t);
+        else if (r < 0.77) m = continueFree(m, t);
+        else if (r < 0.82) m = swapTask(m, m.tasks[i].uid, t) ?? m;
         else if (m.phase === 'combination') m = openWithHelp(m, [], t);
         else m = settle(m, t);
         expect(invariantsHold(m), `seed ${seed} step ${step}`).toBe(true);
@@ -370,14 +504,14 @@ describe('Wald Escape: Schlüssel und Zeitergebnis', () => {
         expect(m.clock.remainingMs).toBeGreaterThanOrEqual(0);
         expect(m.clock.remainingMs).toBeLessThanOrEqual(m.clock.durationMs);
         if (m.phase === 'timeup') expect(m.outcome).toBe('expired');
-        if (m.phase === 'opened') expect(m.keys.length).toBeGreaterThanOrEqual(3);
+        if (m.phase === 'opened') expect(progressOf(m).complete).toBe(true);
       }
     }
   });
 });
 
 describe('Wald Escape: Austausch und Rückgängig', () => {
-  it('Austausch ersetzt nur die offene Karte, schließt das Konzept aus und lässt Funde, Schlüssel und Teilfortschritt unberührt', () => {
+  it('Austausch ersetzt nur die offene Karte, schließt das Konzept aus und lässt Fortschritt unberührt', () => {
     let m = mission({}, 4);
     m = finish(m, 0, T0 + 1000);
     const partial = m.tasks.findIndex((t, i) => i > 0 && t.target > 1);
@@ -390,57 +524,57 @@ describe('Wald Escape: Austausch und Rückgängig', () => {
     expect(swapped.tasks[idx].conceptId).not.toBe(old.conceptId);
     expect(swapped.excludedConcepts).toContain(old.conceptId);
     expect(swapped.tasks[0]).toEqual(m.tasks[0]);
-    expect(swapped.keys).toEqual(m.keys);
+    expect(swapped.completed).toEqual(m.completed);
     if (partial > 0) expect(swapped.tasks[partial].found).toBe(1);
-    expect(new Set(swapped.tasks.map((t) => t.symbol)).size).toBe(swapped.tasks.length);
-    expect(new Set(swapped.tasks.map((t) => t.conceptId)).size).toBe(swapped.tasks.length);
-    // eine fertige Karte lässt sich nicht tauschen
-    expect(swapTask(m, m.tasks[0].uid, T0 + 4000)).toBeNull();
+    expect(new Set(swapped.tasks.map((t) => conceptGroup(t.conceptId))).size).toBe(swapped.tasks.length);
+    expect(swapTask(m, m.tasks[0].uid, T0 + 4000)).toBeNull(); // eine fertige Karte lässt sich nicht tauschen
   });
 
-  it('ausgetauschte Konzepte kehren nie zurück; ohne Alternative bleibt alles unverändert und das Ziel drei Schlüssel', () => {
-    let m = mission({ season: 'summer' }, 2); // 4 Karten
-    const seen = new Set(m.tasks.map((t) => t.conceptId));
-    let n = 0;
-    while (n++ < 10) {
-      const open = m.tasks.find((t) => t.status === 'open')!;
-      const next = swapTask(m, open.uid, T0);
-      if (!next) break;
-      const fresh = next.tasks.find((t) => !m.tasks.some((o) => o.uid === t.uid))!;
-      expect(m.excludedConcepts).not.toContain(fresh.conceptId);
-      seen.add(fresh.conceptId);
-      m = next;
-    }
-    expect(m.requiredKeys).toBe(3);
-    expect(m.tasks.length).toBeGreaterThanOrEqual(4);
+  it('ohne Alternative bleibt alles unverändert und das Ziel (drei Schlüssel, 9 Aufgaben) bleibt erreichbar', () => {
+    const m = mission({ season: 'spring', tasksPerKey: 3 }, 2); // genau neun Konzepte
+    expect(m.tasks.length).toBe(9);
+    expect(swapTask(m, m.tasks[0].uid, T0)).toBeNull();
+    expect(requiredOf(m)).toBe(9);
   });
 
-  it('Rückgängig nimmt einen Fund zurück, entfernt den Schlüssel und lässt andere Karten bestehen', () => {
-    let m = mission();
-    m = finish(m, 0, T0 + 1000);
-    m = finish(m, 1, T0 + 2000);
-    const u = undoFound(m, m.tasks[0].uid, T0 + 3000);
-    expect(u.keys.map((k) => k.uid)).toEqual([m.tasks[1].uid]);
-    expect(u.tasks[0].status).toBe('open');
-    expect(u.tasks[1].status).toBe('done');
-    // nichts zu tun: keine Veränderung
-    const noop = undoFound(u, u.tasks[2].uid, T0 + 4000);
-    expect(noop.tasks).toEqual(u.tasks);
-    expect(noop.keys).toEqual(u.keys);
-  });
-
-  it('Rückgängig nach dem dritten Fund führt zurück in die Suche und verwendet höchstens die eingefrorene Restzeit', () => {
-    let m = mission({ minutes: 10 });
-    m = finish(m, 0, T0 + 1000);
-    m = finish(m, 1, T0 + 2000);
-    m = finish(m, 2, T0 + 4 * MIN);
-    expect(m.outcome).toBe('onTime');
-    const back = undoFound(m, m.tasks[2].uid, T0 + 30 * MIN);
+  it('Rückgängig leitet Fragmente und Schlüssel neu ab: 6 → 5 Aufgaben ergibt 2 Schlüssel und 1 Fragment', () => {
+    const m = finishN(mission(), 6);
+    expect(m.phase).toBe('combination');
+    const back = undoFound(m, m.completed[5].uid, T0 + 30 * MIN);
     expect(back.phase).toBe('searching');
+    expect(progressOf(back)).toMatchObject({ done: 5, keys: 2, fragments: 1, complete: false });
     expect(back.solution).toBeNull();
     expect(back.input).toEqual([null, null, null]);
-    expect(back.keys.length).toBe(2);
     expect(isRunning(back)).toBe(false); // wartet auf „Weitersuchen“
+    // Eine frühere Karte zurücknehmen schiebt die Gruppen neu: 5 → 4 Aufgaben = 2 Schlüssel, 0 Fragmente
+    const earlier = undoFound(back, back.completed[0].uid, T0 + 31 * MIN);
+    expect(progressOf(earlier)).toMatchObject({ done: 4, keys: 2, fragments: 0 });
+  });
+
+  it('Rückgängig bei der großen Mission: 9 → 8 Aufgaben ergibt 2 Schlüssel und 2 Fragmente', () => {
+    const m = finishN(mission({ tasksPerKey: 3 }), 9);
+    const back = undoFound(m, m.completed[8].uid, T0 + 30 * MIN);
+    expect(progressOf(back)).toMatchObject({ done: 8, keys: 2, fragments: 2, missing: 1 });
+    expect(back.phase).toBe('searching');
+  });
+
+  it('ein zurückgenommener Teilfund einer Zählaufgabe verändert kein Fragment', () => {
+    let m = withCountTask();
+    const i = m.tasks.findIndex((t) => t.target > 1);
+    m = addFound(m, m.tasks[i].uid, T0);
+    const u = undoFound(m, m.tasks[i].uid, T0 + 1000);
+    expect(u.tasks[i].found).toBe(0);
+    expect(progressOf(u).done).toBe(0);
+  });
+
+  it('Rückgängig nach der sechsten Aufgabe verwendet höchstens die eingefrorene Restzeit', () => {
+    let m = mission({ minutes: 10 });
+    m = finishN(m, 5);
+    m = finish(m, 5, T0 + 4 * MIN);
+    expect(m.outcome).toBe('onTime');
+    const back = undoFound(m, m.tasks[5].uid, T0 + 30 * MIN);
+    expect(back.phase).toBe('searching');
+    expect(isRunning(back)).toBe(false);
     expect(remainingAt(back, T0 + 99 * MIN)).toBe(10 * MIN - 4 * MIN);
     const go = removePause(back, 'manual', T0 + 31 * MIN);
     expect(remainingAt(go, T0 + 31 * MIN)).toBe(6 * MIN);
@@ -448,38 +582,41 @@ describe('Wald Escape: Austausch und Rückgängig', () => {
 
   it('eine eingetretene Zeitüberschreitung wird durch Rückgängig nie wieder rechtzeitig', () => {
     let m = mission({ minutes: 10 });
-    m = finish(m, 0, T0 + 1000);
-    m = finish(m, 1, T0 + 2000);
-    m = finish(m, 2, T0 + 12 * MIN); // nach Ablauf
+    m = finishN(m, 5);
+    m = finish(m, 5, T0 + 12 * MIN);
     expect(m.outcome).toBe('expired');
-    const back = undoFound(m, m.tasks[2].uid, T0 + 13 * MIN);
+    const back = undoFound(m, m.tasks[5].uid, T0 + 13 * MIN);
     expect(back.phase).toBe('free');
     expect(isRunning(back)).toBe(false);
-    const again = finish(back, 3, T0 + 14 * MIN);
+    const again = finish(back, 5, T0 + 14 * MIN);
     expect(again.outcome).toBe('expired');
   });
 });
 
 describe('Wald Escape: Symbolrätsel', () => {
   function atCombination(age: '4-6' | '7-10', seed: number): EscapeMission {
-    let m = mission({ age }, seed);
-    m = finish(m, 0, T0 + 1000);
-    m = finish(m, 1, T0 + 2000);
-    return finish(m, 2, T0 + 3000);
+    return finishN(mission({ age }, seed), 6);
   }
 
-  it('die Lösung besteht genau aus den drei erhaltenen Symbolen', () => {
+  it('die Lösung besteht genau aus den drei festen Schlüsselsymbolen der Mission', () => {
     for (let seed = 1; seed <= 40; seed++) {
       const m = atCombination(seed % 2 ? '4-6' : '7-10', seed);
-      expect([...m.solution!].sort()).toEqual(m.keys.map((k) => k.symbol).sort());
+      expect([...m.solution!].sort()).toEqual([...m.keySymbols].sort());
     }
   });
 
-  it('7–10: zwei Hinweise lassen genau eine der sechs Reihenfolgen zu, nennen nur erhaltene Symbole', () => {
+  it('die Schlüsselsymbole stehen bei Missionsbeginn fest und ändern sich weder durch Fortschritt noch durch Rückgängig', () => {
+    const m = mission({}, 9);
+    const done = finishN(m, 6);
+    expect(done.keySymbols).toEqual(m.keySymbols);
+    expect(undoFound(done, done.completed[5].uid, T0 + 10 * MIN).keySymbols).toEqual(m.keySymbols);
+  });
+
+  it('7–10: zwei Hinweise lassen genau eine der sechs Reihenfolgen zu, nennen nur vorhandene Symbole', () => {
     const seen = new Set<string>();
     for (let seed = 1; seed <= 150; seed++) {
       const m = atCombination('7-10', seed);
-      const owned = m.keys.map((k) => k.symbol);
+      const owned = m.keySymbols;
       expect(m.clues!.length).toBe(2);
       expect(countSolutions(owned, m.clues!), `seed ${seed}`).toBe(1);
       for (const c of m.clues!) {
@@ -487,7 +624,6 @@ describe('Wald Escape: Symbolrätsel', () => {
         if (c.b) expect(owned).toContain(c.b);
         seen.add(describeClue(c));
       }
-      // die einzige Lösung ist die gespeicherte Reihenfolge
       const only = permutations(owned).filter((p) => countSolutions(p, m.clues!) === 1);
       expect(only.some((p) => p.join() === m.solution!.join())).toBe(true);
     }
@@ -524,7 +660,7 @@ describe('Wald Escape: Symbolrätsel', () => {
     let x = m;
     for (const s of m.solution!) x = placeSymbol(x, s);
     expect(x.input).toEqual(m.solution);
-    const res = openVault(x, [], T0 + 5000);
+    const res = openVault(x, [], T0 + 50_000);
     expect(res.ok).toBe(true);
     expect(res.mission.phase).toBe('opened');
   });
@@ -543,23 +679,20 @@ describe('Wald Escape: Symbolrätsel', () => {
     x = placeAt(x, 0, a);
     x = placeAt(x, 1, b);
     expect(openVault(x, [], T0).ok).toBe(true);
-    // fremde Symbole und Doppelte werden nicht gesetzt
-    const foreign = SYMBOLS.find((s) => !m.keys.some((k) => k.symbol === s))!;
+    const foreign = (['leaf', 'cone', 'acorn', 'star', 'mushroom', 'sun', 'moon', 'drop'] as SymbolId[]).find((s) => !m.keySymbols.includes(s))!;
     expect(placeSymbol(m, foreign).input).toEqual([null, null, null]);
     expect(placeSymbol(placeSymbol(m, a), a).input).toEqual([a, null, null]);
-    // unvollständige Belegung öffnet nie
     expect(openVault(placeSymbol(m, a), [], T0).ok).toBe(false);
   });
 
-  it('Tipp und Hilfsauflösung führen immer weiter; „Gemeinsam öffnen“ öffnet mit drei Schlüsseln', () => {
+  it('Tipp und Hilfsauflösung führen immer weiter; vor der letzten Aufgabe öffnet nichts', () => {
     const m = atCombination('7-10', 21);
     expect(giveHint(giveHint(giveHint(m))).hints).toBe(2);
-    const helped = openWithHelp(m, [], T0 + 9000);
+    const helped = openWithHelp(m, [], T0 + 90_000);
     expect(helped.phase).toBe('opened');
     expect(helped.helped).toBe(true);
     expect(helped.input).toEqual(m.solution);
-    // vor dem dritten Schlüssel öffnet nichts
-    const early = finish(mission(), 0, T0);
+    const early = finishN(mission(), 5);
     expect(openWithHelp(early, [], T0).phase).toBe('searching');
     expect(openVault(early, [], T0).ok).toBe(false);
   });
@@ -567,11 +700,7 @@ describe('Wald Escape: Symbolrätsel', () => {
 
 describe('Wald Escape: Geschenk, Abschluss, Korrektur', () => {
   function opened(received: string[] = []): EscapeMission {
-    let m = mission({}, 13);
-    m = finish(m, 0, T0 + 1000);
-    m = finish(m, 1, T0 + 2000);
-    m = finish(m, 2, T0 + 3000);
-    return openWithHelp(m, received, T0 + 4000);
+    return openWithHelp(finishN(mission({}, 13), 6), received, T0 + 40_000);
   }
 
   it('genau ein Geschenk pro Mission, gespeichert beim Öffnen; erneutes Öffnen vergibt kein zweites', () => {
@@ -580,8 +709,8 @@ describe('Wald Escape: Geschenk, Abschluss, Korrektur', () => {
     expect(needsCelebration(m)).toBe(true);
     const celebrated = markCelebrated(m);
     expect(needsCelebration(celebrated)).toBe(false);
-    expect(markCelebrated(celebrated)).toBe(celebrated); // keine Konfetti-Wiederholung
-    const again = openWithHelp(celebrated, ['anderes'], T0 + 9000);
+    expect(markCelebrated(celebrated)).toBe(celebrated);
+    const again = openWithHelp(celebrated, ['anderes'], T0 + 90_000);
     expect(again.phase).toBe('opened');
     expect(again.gift).toEqual(celebrated.gift);
   });
@@ -591,15 +720,13 @@ describe('Wald Escape: Geschenk, Abschluss, Korrektur', () => {
     expect(timely.outcome).toBe('onTime');
     expect(resultLine(timely)).toBe('Tresor geöffnet! Ihr habt alle drei Schlüssel rechtzeitig gefunden.');
     let late = mission({ minutes: 10 }, 13);
-    late = finish(late, 0, T0 + 1000);
-    late = finish(late, 1, T0 + 2000);
+    late = finishN(late, 5);
     late = settle(late, T0 + 11 * MIN);
     late = continueFree(late, T0 + 12 * MIN);
-    late = finish(late, 2, T0 + 13 * MIN);
+    late = finish(late, 5, T0 + 13 * MIN);
     late = openWithHelp(late, [], T0 + 14 * MIN);
     expect(late.outcome).toBe('expired');
     expect(resultLine(late)).toBe('Tresor geöffnet! Gemeinsam habt ihr das Waldgeheimnis entdeckt.');
-    expect(resultLine(late)).not.toMatch(/rechtzeitig/);
     expect(late.gift && giftsById[late.gift.id]).toBeTruthy();
     expect(Object.keys(late.gift!).sort()).toEqual(Object.keys(timely.gift!).sort());
   });
@@ -612,36 +739,80 @@ describe('Wald Escape: Geschenk, Abschluss, Korrektur', () => {
 
   it('Korrektur nach der Öffnung: Das Geschenk bleibt lesbar und es gibt kein zweites; keine falsche Vollständigkeit', () => {
     const m = markCelebrated(opened());
-    const back = undoFound(m, m.keys[2].uid, T0 + 20_000);
+    const back = undoFound(m, m.completed[5].uid, T0 + 120_000);
     expect(back.phase).not.toBe('opened');
-    expect(back.keys.length).toBe(2);
+    expect(progressOf(back)).toMatchObject({ done: 5, keys: 2, fragments: 1 });
     expect(back.gift).toEqual(m.gift);
-    const done = finish(back, 4, T0 + 21_000);
+    const done = finish(back, 5, T0 + 121_000);
     expect(done.phase).toBe('combination');
-    const reopened = openWithHelp(done, ['x'], T0 + 22_000);
+    const reopened = openWithHelp(done, ['x'], T0 + 122_000);
     expect(reopened.gift).toEqual(m.gift);
     expect(needsCelebration(reopened)).toBe(false);
   });
 
   it('vorzeitiges Beenden ist ein ehrlicher Teilabschluss ohne Geschenk', () => {
-    let m = mission();
-    m = finish(m, 0, T0 + 1000);
-    const e = endEarly(m, T0 + 2000);
+    const m = finishN(mission(), 1);
+    const e = endEarly(m, T0 + 20_000);
     expect(e.phase).toBe('ended');
     expect(e.gift).toBeUndefined();
-    expect(keyTasks(e).length).toBe(1);
+    expect(completedTasks(e).length).toBe(1);
     expect(openWithHelp(e, [], T0).phase).toBe('ended');
   });
 });
 
-describe('Spielmodus und Einstellungen', () => {
-  it('Standard ist „Waldschätze suchen“ mit 15 Minuten; unbekannte Werte fallen darauf zurück', () => {
+describe('Frühere Missionen und Einstellungen', () => {
+  function legacyRaw(): Record<string, unknown> {
+    const m = mission({}, 3);
+    const symbols = ['leaf', 'cone', 'acorn', 'star', 'mushroom', 'sun', 'moon', 'drop'];
+    const tasks = m.tasks.map((t, i) => ({ ...t, symbol: symbols[i % symbols.length] }));
+    for (const i of [0, 1]) tasks[i] = { ...tasks[i], found: tasks[i].target, status: 'done' as const };
+    const { keySymbols: _k, completed: _c, tasksPerKey: _t, rules: _r, keyCount: _n, ...rest } = m;
+    void [_k, _c, _t, _r, _n];
+    return {
+      ...rest,
+      v: 1,
+      tasks,
+      requiredKeys: 3,
+      keys: [0, 1].map((i) => ({ uid: tasks[i].uid, symbol: tasks[i].symbol, templateId: tasks[i].templateId, at: T0 + 1000 + i })),
+    };
+  }
+
+  it('eine frühere Mission (ein Fund = ein Schlüssel) bleibt mit ihrer Regel fortsetzbar und wird nicht auf 6 oder 9 umgedeutet', () => {
+    const m = sanitizeEscape(legacyRaw())!;
+    expect(m).not.toBeNull();
+    expect(isLegacy(m)).toBe(true);
+    expect(m.rules).toBe(1);
+    expect(m.tasksPerKey).toBe(1);
+    expect(requiredOf(m)).toBe(3);
+    expect(progressOf(m)).toMatchObject({ done: 2, keys: 2, required: 3 });
+    expect(m.keySymbols.slice(0, 2)).toEqual(['leaf', 'cone']);
+    expect(new Set(m.keySymbols).size).toBe(3);
+    // der dritte Fund schließt sie wie früher ab
+    const finished = finish(m, 2, T0 + 5000);
+    expect(finished.phase).toBe('combination');
+    expect(invariantsHold(finished)).toBe(true);
+  });
+
+  it('eine abgeschlossene frühere Mission bekommt nachträglich weder Geschenk noch Konfetti', () => {
+    const raw = legacyRaw();
+    const m = sanitizeEscape({ ...raw, phase: 'ended' })!;
+    expect(m.phase).toBe('ended');
+    expect(m.gift).toBeUndefined();
+    expect(needsCelebration(m)).toBe(false);
+  });
+
+  it('Standard ist „Waldschätze suchen“; Größe und Zeit sind anfangs nicht gewählt (null), unbekannte Werte fallen darauf zurück', () => {
     expect(sanitizeSettings(undefined).mode).toBe('treasure');
-    expect(sanitizeSettings(undefined).escapeMinutes).toBe(15);
-    expect(sanitizeSettings({ mode: 'kaputt', escapeMinutes: 7 }).mode).toBe('treasure');
-    expect(sanitizeSettings({ mode: 'kaputt', escapeMinutes: 7 }).escapeMinutes).toBe(15);
-    expect(sanitizeSettings({ mode: 'escape', escapeMinutes: 20 })).toMatchObject({ mode: 'escape', escapeMinutes: 20 });
+    expect(sanitizeSettings(undefined).escapeMinutes).toBeNull();
+    expect(sanitizeSettings(undefined).escapeSize).toBeNull();
+    expect(DEFAULT_SETTINGS.escapeMinutes).toBeNull();
+    expect(sanitizeSettings({ mode: 'kaputt', escapeSize: 'small', escapeMinutes: 7 })).toMatchObject({ mode: 'treasure', escapeMinutes: null, escapeSize: 'small' });
+    expect(sanitizeSettings({ mode: 'escape', escapeSize: 'large', escapeMinutes: 30 })).toMatchObject({ mode: 'escape', escapeMinutes: 30, escapeSize: 'large' });
     expect(sanitizeSettings({ mode: 'detective' }).mode).toBe('detective');
+  });
+
+  it('alter Standardwert 15 Minuten (ohne Größenangabe) war nie eine bewusste Wahl und gilt nicht weiter', () => {
+    expect(sanitizeSettings({ mode: 'escape', escapeMinutes: 15 }).escapeMinutes).toBeNull();
   });
 
   it('ältere gespeicherte Einstellungen ohne Modus bleiben gültig (nichts geht verloren)', () => {
@@ -656,7 +827,6 @@ describe('Spielmodus und Einstellungen', () => {
   it('die Waldschätze-Runde bleibt unverändert: Wald Escape berührt weder Regeln noch Speicher der Runde', () => {
     const r = generateRound({ age: '7-10', environment: 'forest', season: 'autumn', seasonSource: 'auto', context: [], boost: false, count: 5, seed: 3, rng: seededRng(3) }).round!;
     expect(r.tasks.length).toBe(5);
-    // Drei erfüllte Karten beenden eine normale Fünferrunde NICHT (anders als bei Wald Escape)
     let x = r;
     for (const t of r.tasks.slice(0, 3)) for (let i = 0; i < 6; i++) x = addFoundRound(x, t.uid);
     expect(isFullyFound(x)).toBe(false);
@@ -664,29 +834,32 @@ describe('Spielmodus und Einstellungen', () => {
 });
 
 describe('Wald Escape: Speicherung', () => {
-  it('speichert und lädt eine laufende Mission verlustfrei (Karten, Symbole, Texte, Bildverweise)', () => {
+  it('speichert und lädt eine laufende Mission verlustfrei (Karten, Symbole, Fragmente, Texte, Bildverweise)', () => {
     const store = memoryStore();
     const p = createEscapePersistence(store);
-    let m = mission({}, 17);
-    m = finish(m, 0, T0 + 1000);
+    let m = mission({ minutes: 20 }, 17);
+    m = finishN(m, 3);
     expect(p.save(m)).toBe('ok');
-    const loaded = p.load(T0 + 2000).mission!;
-    expect(loaded.tasks.map((t) => [t.uid, t.symbol, t.prompt, t.found, t.status])).toEqual(m.tasks.map((t) => [t.uid, t.symbol, t.prompt, t.found, t.status]));
-    expect(loaded.keys).toEqual(m.keys);
+    const loaded = p.load(T0 + 20_000).mission!;
+    expect(loaded.tasks.map((t) => [t.uid, t.prompt, t.found, t.status])).toEqual(m.tasks.map((t) => [t.uid, t.prompt, t.found, t.status]));
+    expect(loaded.completed).toEqual(m.completed);
+    expect(loaded.keySymbols).toEqual(m.keySymbols);
+    expect(loaded.tasksPerKey).toBe(2);
+    expect(loaded.rules).toBe(2);
     expect(loaded.seed).toBe(m.seed);
   });
 
-  it('eine vor dem Update gespeicherte Mission zeigt die aktuellen Bildangaben, behält aber Fortschritt und Schlüssel', () => {
+  it('eine vor dem Update gespeicherte Mission zeigt die aktuellen Bildangaben, behält aber Fortschritt', () => {
     const store = memoryStore();
     const p = createEscapePersistence(store);
     let m = mission({}, 19);
     m = finish(m, 1, T0 + 1000);
     const old = JSON.parse(JSON.stringify(m)) as EscapeMission;
-    old.tasks[1].image = { ...old.tasks[1].image, alt: 'Alte Beschreibung', illustrationKey: old.tasks[1].image.illustrationKey };
+    old.tasks[1].image = { ...old.tasks[1].image, alt: 'Alte Beschreibung' };
     store.setItem(ESCAPE_KEY, JSON.stringify({ v: 1, savedAt: 1, mission: old }));
     const loaded = p.load(T0 + 2000).mission!;
     expect(loaded.tasks[1].image.alt).toBe(m.tasks[1].image.alt);
-    expect(loaded.keys.length).toBe(1);
+    expect(progressOf(loaded).done).toBe(1);
   });
 
   it('beschädigter, fremder oder gesperrter Speicher führt nie zum Absturz', () => {
@@ -712,14 +885,11 @@ describe('Wald Escape: Speicherung', () => {
     expect(p.save(m1)).toBe('ok');
     const tabB = { ...finish(m1, 0, T0 + 1000), rev: m1.rev + 1 };
     expect(p.save(tabB)).toBe('ok');
-    // Tab A (noch auf rev 1) möchte beim Schließen speichern
     expect(p.save(m1)).toBe('stale');
-    expect(p.load(T0 + 5000).mission!.keys.length).toBe(1);
-    // eine später begonnene neue Mission ersetzt die alte, eine ältere nicht die neuere
+    expect(progressOf(p.load(T0 + 5000).mission!).done).toBe(1);
     const newer = mission({}, 24, T0 + 60_000);
     expect(p.save(newer)).toBe('ok');
     expect(p.save(tabB)).toBe('stale');
-    // Löschen ist immer möglich
     expect(p.save(null)).toBe('ok');
     expect(p.load(T0).status).toBe('empty');
   });

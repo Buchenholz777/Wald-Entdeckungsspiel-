@@ -46,6 +46,11 @@ Gezeichnet wird ausdrücklich ein **Beispiel**. Die Aufgaben suchen allgemein (�
 | `spider-web` | Radnetz mit Tau | gerade Speichen, feine Spirale, Tautropfen, zwischen Zweigen, dunkler ruhiger Grund | |
 | `needle-twig` | Fichtenzweig | Nadeln rundum an braunem Zweig, hellere junge Spitze, Endknospe | Kiefer und Tanne haben andere Nadelstellung |
 | `beech-bud` | Buchenzweig | lange, spitze, rotbraune Knospen mit Schuppen, wechselständig am Zweig | |
+| `y-twig` | Zweig mit Gabelung | brauner Zweig, der sich in zwei Äste teilt (Y), Knospen an den Spitzen, kleine Korkporen | |
+| `leaf-vein-net` | Laubblatt mit Adernetz | helle Mittelader, Seitenadern zum Rand, feine Quervernetzung, Stiel | Aderung nach Rotbuche; andere Blätter sehen anders aus |
+| `hornbeam-fruit` | Hainbuchenfrucht | dreilappiges Flügelblatt, mittlerer Lappen am längsten, gesägter Rand, kleines gerilltes Nüsschen in der Mitte | Lappenform und Nüsschen vereinfacht, nicht nach Messwerten |
+| `linden-fruit` | Lindenfruchtstand | langes schmales Flügelblatt, Stiel mit dem Blatt verwachsen, mehrere kleine runde graubraune Nüsschen | Zahl der Nüsschen vereinfacht |
+| `alder-cone` | Erlenzäpfchen am Zweig | dunkler Zweig mit mehreren kleinen eiförmigen, verholzten Zäpfchen auf kurzen Stielen, Schuppenmuster | Erle ist ein Laubbaum, Zäpfchen sehen nadelbaumähnlich aus |
 | `animal-track` | Pfotenspur | vier Zehen, ein Ballen, mehrere Abdrücke hintereinander, vertieft im Matsch mit Lichtkante | allgemein gehalten, keine Artzuordnung |
 | `deer-track` | Rehspur | zwei längliche, vorn spitze Hälften, keine Zehen | Zuordnung bleibt eine Vermutung (Aufgabentext) |
 | `dog-track` | Hundespur | großer dreilappiger Ballen, vier Zehen, Krallenpunkte | Zuordnung bleibt eine Vermutung (Aufgabentext) |

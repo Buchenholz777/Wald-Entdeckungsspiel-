@@ -31,7 +31,10 @@ export type ContextTag =
   | 'hazel'
   | 'beech'
   | 'mud'
-  | 'fern';
+  | 'fern'
+  | 'hornbeam'
+  | 'linden'
+  | 'alder';
 
 /** Leitmotive der Waldmissionen (redaktionell, siehe docs/SPIELKONZEPT.md). */
 export type Theme = 'growth' | 'gnawed' | 'water' | 'decay' | 'pattern' | 'year';
@@ -262,8 +265,10 @@ export interface Settings {
   giftsReceived: string[];
   /** Zuletzt gewählter Spielmodus auf dem Startbildschirm (startet nie etwas von allein) */
   mode: GameMode;
-  /** Zuletzt gewählte Suchzeit für Wald Escape in Minuten (10, 15 oder 20) */
-  escapeMinutes: number;
+  /** Zuletzt bewusst gewählte Suchzeit für Wald Escape in Minuten (10, 15, 20 oder 30); null = Standard der gewählten Größe */
+  escapeMinutes: number | null;
+  /** Zuletzt bewusst gewählte Größe von Wald Escape (klein: 6 Aufgaben, groß: 9 Aufgaben); null = Standard des Alters */
+  escapeSize: 'small' | 'large' | null;
 }
 
 /** Die drei Spielmodi: Waldschätze suchen, Walddetektive, Wald Escape. */

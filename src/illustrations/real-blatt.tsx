@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { shade, useGid, type Art } from './kit';
-import { blob, Gloss, Loupe, rng, Shadow, SilShadow, smoothPath, type Pt } from './real-kit';
+import { blob, Gloss, Loupe, Orb, rng, Shadow, SilShadow, smoothPath, type Pt } from './real-kit';
 
 /* ============================================================================================
    Blätter und Zweige, naturgetreu: Umrisse aus Formeln (Rotbuche, Spitzahorn, Stieleiche), Adern in der
@@ -804,9 +804,243 @@ function BeechTwigArt() {
   );
 }
 
+/* --------------------------------- Zweig mit Gabelung (Y) --------------------------------- */
+
+function YTwigArt() {
+  const r = rng(31);
+  const stem = 'M121,192 C119,164 120,134 117,108';
+  const left = 'M117,108 C102,88 82,60 60,26';
+  const right = 'M117,108 C130,84 152,58 184,34';
+  const lat = 'M96,76 C84,72 76,74 68,66';
+  const parts: { d: string; w: number }[] = [
+    { d: stem, w: 12 },
+    { d: left, w: 8.6 },
+    { d: right, w: 8.2 },
+    { d: lat, w: 3.6 },
+  ];
+  const buds: ReactNode[] = [];
+  const bud = (x: number, y: number, a: number, l: number, k: number) => (
+    <g key={k} transform={`translate(${x} ${y}) rotate(${a})`}>
+      <path d={`M0,-2.6 Q${l * 0.6},-3.4 ${l},0 Q${l * 0.6},3.4 0,2.6 Z`} fill="#8c4c2a" stroke="#3a1c0a" strokeOpacity="0.6" strokeWidth="0.6" />
+      <path d={`M1,-1.6 Q${l * 0.55},-2.2 ${l * 0.9},-0.2`} fill="none" stroke="#e0b078" strokeOpacity="0.6" strokeWidth="0.5" />
+    </g>
+  );
+  buds.push(bud(60, 26, -116, 15, 1), bud(184, 34, -36, 15, 2), bud(68, 66, -150, 9, 3), bud(146, 64, -60, 9, 4), bud(125, 150, 36, 8, 5), bud(98, 78, -140, 9, 6));
+  const lent: ReactNode[] = [];
+  for (let i = 0; i < 34; i++) {
+    const t = r.next();
+    const y = 192 - t * 84;
+    lent.push(<ellipse key={i} cx={121 - t * 4 + r.between(-3, 3)} cy={y} rx={1.3} ry={0.55} fill="#e8dcc8" opacity="0.8" />);
+  }
+  return (
+    <g>
+      {parts.map((p, i) => (
+        <path key={`s${i}`} d={p.d} transform="translate(5 8)" fill="none" stroke="#1a1408" strokeOpacity="0.28" strokeWidth={p.w + 3} strokeLinecap="round" filter="url(#nx-b2)" />
+      ))}
+      {parts.map((p, i) => (
+        <path key={`a${i}`} d={p.d} fill="none" stroke="#5c4634" strokeWidth={p.w} strokeLinecap="round" />
+      ))}
+      <circle cx="117" cy="108" r="7.4" fill="#5c4634" />
+      {parts.map((p, i) => (
+        <path key={`b${i}`} d={p.d} fill="none" stroke="#9c8468" strokeWidth={p.w * 0.34} strokeLinecap="round" transform="translate(-0.9 -1.2)" />
+      ))}
+      {parts.map((p, i) => (
+        <path key={`c${i}`} d={p.d} fill="none" stroke="#2c2016" strokeOpacity="0.4" strokeWidth="0.9" strokeDasharray="0.8 3.4" strokeLinecap="round" />
+      ))}
+      {lent}
+      {buds}
+    </g>
+  );
+}
+
+/* --------------------------------- Blatt mit deutlichem Adernetz --------------------------------- */
+
+function VeinNetLeaf() {
+  const len = 142;
+  const W = 94;
+  const o = beechLeaf(len, W, 3);
+  let main = `M0,6 L0,${f(-len * 0.98)}`;
+  let cross = '';
+  const r = rng(41);
+  const pairs = 9;
+  for (let i = 0; i < pairs; i++) {
+    const t = 0.1 + (i / pairs) * 0.8;
+    const t2 = t + 0.14;
+    const hw = (W / 2) * Math.pow(Math.sin(Math.PI * Math.pow(Math.min(t2, 0.99), 0.82)), 0.92) * 0.92;
+    for (const s of [1, -1]) {
+      main += ` M0,${f(-t * len)} Q${f(s * hw * 0.45)},${f(-(t + 0.04) * len)} ${f(s * hw)},${f(-t2 * len)}`;
+      for (let k = 1; k < 7; k++) {
+        const u = k / 7;
+        const px = s * hw * u * 0.9;
+        const py = -(t + 0.03 * u + 0.13 * u * 0.92) * len;
+        const nx = px + s * (4 + r.next() * 3);
+        const ny = py - (9 + r.next() * 5);
+        cross += ` M${f(px)},${f(py)} Q${f((px + nx) / 2 + r.between(-2, 2))},${f((py + ny) / 2)} ${f(nx)},${f(ny)}`;
+      }
+    }
+  }
+  return (
+    <g transform="translate(120 180) rotate(-6) scale(1.08)">
+      <SilShadow d={o.d} dx={4} dy={6} o={0.24} />
+      <Petiole len={22} w={3.2} color="#8c8a3c" />
+      <Blade
+        d={o.d}
+        veins={main}
+        c1="#cfc860"
+        c2="#aaa436"
+        c3="#7e8a28"
+        vein="#f6f2c0"
+        veinO={0.96}
+        veinW={1.9}
+        extra={<path d={cross} fill="none" stroke="#f6f2c0" strokeOpacity="0.7" strokeWidth="0.75" strokeLinecap="round" />}
+      />
+    </g>
+  );
+}
+
+/* --------------------------------- Hainbuchenfrucht: dreilappiges Flügelblatt mit Nüsschen --------------------------------- */
+
+function HornbeamLobe({ len, W, ang, seed, y = 0 }: { len: number; W: number; ang: number; seed: number; y?: number }) {
+  const o = leafOutline({ len, hw: (t) => (W / 2) * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.78)), 0.9), teeth: 13, toothD: 1.7, seed, n: 52 });
+  return (
+    <g transform={`translate(0 ${y}) rotate(${ang})`}>
+      <SilShadow d={o.d} dx={3} dy={5} o={0.2} />
+      <Blade d={o.d} veins={beechVeins(len, W, 6)} c1="#d2dc7a" c2="#aebe50" c3="#85a03a" vein="#f2f6c4" veinO={0.85} veinW={1.2} />
+    </g>
+  );
+}
+
+function HornbeamFruitArt() {
+  const nut = blob(0, 0, 9, 13, 8, 0.05, 14);
+  return (
+    <g transform="translate(116 168) rotate(4)">
+      <path d="M0,4 C2,18 6,28 10,38" fill="none" stroke="#6a5238" strokeWidth="3" strokeLinecap="round" />
+      <HornbeamLobe len={58} W={30} ang={-66} seed={5} y={-4} />
+      <HornbeamLobe len={50} W={27} ang={62} seed={6} y={-4} />
+      <HornbeamLobe len={112} W={42} ang={0} seed={7} y={-4} />
+      <g transform="translate(0 -6)">
+        <path d={nut} transform="translate(2 3)" fill="#241608" opacity="0.3" filter="url(#nx-b1)" />
+        <Orb d={nut} base="#9a7a44" stroke="#4a3416" sw={0.8} />
+        <path d="M-5,-9 C-6,-2 -6,4 -4,10 M0,-12 L0,12 M5,-9 C6,-2 6,4 4,10" fill="none" stroke="#3a2810" strokeOpacity="0.5" strokeWidth="0.8" strokeLinecap="round" />
+        <Gloss cx={-3} cy={-5} rx={2.6} ry={4.6} rot={-14} o={0.5} />
+      </g>
+    </g>
+  );
+}
+
+/* --------------------------------- Lindenfruchtstand: Flügelblatt mit Nüsschen --------------------------------- */
+
+function LindenFruitArt() {
+  const bract = leafOutline({ len: 124, hw: (t) => 15.5 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.85)), 0.8), waves: 3, wob: 0.8, seed: 9, n: 50 });
+  let veins = 'M0,4 L0,-120';
+  for (let i = 0; i < 9; i++) {
+    const t = 0.1 + i * 0.09;
+    for (const s of [1, -1]) veins += ` M0,${f(-t * 124)} Q${f(s * 7)},${f(-(t + 0.03) * 124)} ${f(s * 13)},${f(-(t + 0.08) * 124)}`;
+  }
+  const nuts: { x: number; y: number; r: number; k: number }[] = [
+    { x: -15, y: -92, r: 8.6, k: 1 },
+    { x: 9, y: -98, r: 8.2, k: 2 },
+    { x: 20, y: -78, r: 8.8, k: 3 },
+    { x: -4, y: -76, r: 8.4, k: 4 },
+  ];
+  return (
+    <g transform="translate(74 186) rotate(28)">
+      <SilShadow d={bract.d} dx={4} dy={6} o={0.22} />
+      <path d="M0,4 C-1,16 -3,26 -6,34" fill="none" stroke="#7a6240" strokeWidth="3.2" strokeLinecap="round" />
+      <Blade d={bract.d} veins={veins} c1="#e0dc94" c2="#c8c46c" c3="#a2a64e" vein="#f6f4cc" veinO={0.8} veinW={1.2} />
+      {/* der Stiel ist bis etwa zur Hälfte mit dem Flügelblatt verwachsen und löst sich dann */}
+      <path d="M0,2 L0,-58" stroke="#8a7248" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M0,-58 C-4,-66 -9,-72 -15,-86 M0,-58 C4,-70 6,-84 9,-92 M0,-58 C8,-62 14,-68 20,-72 M0,-58 C-1,-64 -3,-68 -4,-70" fill="none" stroke="#8a7248" strokeWidth="1.5" strokeLinecap="round" />
+      {nuts.map((n) => {
+        const d = blob(n.x, n.y, n.r, n.r * 1.04, 20 + n.k, 0.04, 14);
+        return (
+          <g key={n.k}>
+            <path d={d} transform="translate(2 3)" fill="#241608" opacity="0.3" filter="url(#nx-b1)" />
+            <Orb d={d} base="#b4a77c" stroke="#5a4c2c" sw={0.7} />
+            <path d={d} fill="#6a5a34" filter="url(#nx-bump-velvet)" opacity="0.35" />
+            <Gloss cx={n.x - 2.6} cy={n.y - 3} rx={2.4} ry={3.2} rot={-20} o={0.5} />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+/* --------------------------------- Erlenzäpfchen: kleine verholzte Fruchtstände am Zweig --------------------------------- */
+
+function AlderCone({ x, y, ang, s, seed }: { x: number; y: number; ang: number; s: number; seed: number }) {
+  const id = useGid('ac');
+  const rx = 10.5 * s;
+  const ry = 16 * s;
+  const body = blob(0, 0, rx, ry, seed, 0.04, 16);
+  const arcs: ReactNode[] = [];
+  const hi: ReactNode[] = [];
+  for (let j = -7; j <= 7; j++) {
+    const yy = j * 3.3 * s;
+    for (let i = -3; i <= 3; i++) {
+      const xx = (i + (j % 2 ? 0.5 : 0)) * 5.4 * s;
+      arcs.push(<path key={`${j}_${i}`} d={`M${f(xx - 2.8 * s)},${f(yy - 1.2 * s)} Q${f(xx)},${f(yy + 3 * s)} ${f(xx + 2.8 * s)},${f(yy - 1.2 * s)}`} fill="none" stroke="#1c0e06" strokeOpacity="0.7" strokeWidth="0.9" />);
+      hi.push(<path key={`h${j}_${i}`} d={`M${f(xx - 2.2 * s)},${f(yy - 1.8 * s)} Q${f(xx)},${f(yy + 1.6 * s)} ${f(xx + 2.2 * s)},${f(yy - 1.8 * s)}`} fill="none" stroke="#a88660" strokeOpacity="0.55" strokeWidth="0.6" />);
+    }
+  }
+  return (
+    <g transform={`translate(${x} ${y}) rotate(${ang})`}>
+      <path d="M0,0 L0,-14" stroke="#4a3a2a" strokeWidth={2.6 * s} strokeLinecap="round" />
+      <g transform={`translate(0 ${-14 - ry + 2})`}>
+        <defs>
+          <clipPath id={`${id}c`}>
+            <path d={body} />
+          </clipPath>
+        </defs>
+        <path d={body} transform="translate(3 4)" fill="#1a1408" opacity="0.3" filter="url(#nx-b2)" />
+        <Orb d={body} base="#5a3a22" hi={0.28} lo={0.4} />
+        <g clipPath={`url(#${id}c)`}>
+          <path d={body} fill="#1a0c04" filter="url(#nx-bump)" opacity="0.3" />
+          {arcs}
+          {hi}
+        </g>
+        <path d={body} fill="none" stroke="#1c0e06" strokeOpacity="0.6" strokeWidth="0.8" />
+      </g>
+    </g>
+  );
+}
+
+function AlderConeArt() {
+  const r = rng(52);
+  const nodes: Pt[] = [[10, 168], [64, 146], [120, 126], [176, 98], [226, 84]];
+  const path = smoothPath(nodes, false, 0.6);
+  const lent: ReactNode[] = [];
+  for (let i = 0; i < 28; i++) {
+    const seg = Math.floor(r.next() * 4);
+    const u = r.next();
+    const a = nodes[seg];
+    const b = nodes[seg + 1];
+    const px = a[0] + (b[0] - a[0]) * u;
+    const py = a[1] + (b[1] - a[1]) * u - 0.4;
+    lent.push(<ellipse key={i} cx={px} cy={py} rx={1.5} ry={0.6} fill="#d8c8b0" opacity="0.75" transform={`rotate(${(Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI} ${px} ${py})`} />);
+  }
+  return (
+    <g>
+      <path d={path} transform="translate(4 8)" fill="none" stroke="#1a1408" strokeOpacity="0.3" strokeWidth="9" strokeLinecap="round" filter="url(#nx-b2)" />
+      <path d={path} fill="none" stroke="#4a3a34" strokeWidth="6.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={path} fill="none" stroke="#85705e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" transform="translate(-0.5 -1.2)" />
+      {lent}
+      <AlderCone x={62} y={147} ang={-18} s={0.94} seed={3} />
+      <AlderCone x={114} y={128} ang={10} s={1.04} seed={4} />
+      <AlderCone x={126} y={124} ang={-34} s={0.9} seed={5} />
+      <AlderCone x={174} y={100} ang={-8} s={1} seed={6} />
+    </g>
+  );
+}
+
 /* ============================================================================================ */
 
 export const realBlatt: Record<string, Art> = {
+  'y-twig': { bg: 'leafy', shadow: false, draw: () => <YTwigArt /> },
+  'leaf-vein-net': { bg: 'litter', shadow: false, draw: () => <VeinNetLeaf /> },
+  'hornbeam-fruit': { bg: 'litter', shadow: false, draw: () => <HornbeamFruitArt /> },
+  'linden-fruit': { bg: 'litter', shadow: false, draw: () => <LindenFruitArt /> },
+  'alder-cone': { bg: 'leafy', shadow: false, draw: () => <AlderConeArt /> },
   'fern-frond': { bg: 'leafy', shadow: false, draw: () => <FernFrondArt /> },
   'fern-spores': { bg: 'leafy', shadow: false, draw: () => <FernSporesArt /> },
   'needle-twig': { bg: 'litter', shadow: false, draw: () => <NeedleTwigArt /> },

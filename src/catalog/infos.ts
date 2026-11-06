@@ -207,6 +207,71 @@ const raw: Record<string, Entry> = {
       'Wie würde der Baum im Frühling wohl starten, wenn seine Blätter erst dann angelegt würden?',
     ],
   },
+  'y-twig': {
+    m: [
+      'Dieser Zweig teilt sich in zwei Äste. Die Stelle sieht aus wie der Buchstabe Y.',
+      'Zweige wachsen an ihrer Spitze weiter. Manchmal bildet der Zweig dort zwei neue Triebe, dann entsteht eine Gabel. Vielleicht ist der Zweig im Wind oder Regen heruntergefallen.',
+      'So wird eine Baumkrone Jahr für Jahr verzweigter und dichter. Auf jedem Ast sitzen Knospen, aus denen im Frühling neue Blätter wachsen. Bitte brecht keinen Zweig ab.',
+    ],
+    o: [
+      'Eine Zweiggabel entsteht, wenn sich aus einer Knospe oder einer Spitze zwei Triebe weiterentwickeln. Bei vielen Laubbäumen sitzen die Knospen abwechselnd oder gegenständig, die Gabel ist dann ein Hinweis darauf, wie der Zweig gewachsen ist.',
+      'Die Spitze eines Zweiges kann durch Frost, Wind, Wild oder Insekten verloren gehen. Dann treibt eine Seitenknospe aus und übernimmt. So kann eine Gabel entstehen. Welche Ursache bei einem einzelnen Zweig zutrifft, lässt sich oft nicht sagen.',
+      'Verzweigung ist eine Möglichkeit des Baumes, viel Licht einzufangen. Je mehr Äste und Blätter, desto mehr Fläche für die Sonne. Gleichzeitig muss die Krone stabil bleiben, damit Wind und Schnee sie nicht abbrechen.',
+      'Wie viele Gabeln zählt ihr an eurem Zweig? Was würde passieren, wenn ein Baum nur einen einzigen langen Ast hätte?',
+    ],
+  },
+  'leaf-vein-net': {
+    m: [
+      'Auf diesem Blatt sieht man viele feine Linien. Das sind die Adern. Eine dicke Ader läuft in der Mitte entlang, dünnere gehen zu den Seiten.',
+      'Das Blatt ist an einem Baum oder Strauch gewachsen und liegt jetzt am Boden. Die Adern sind schon beim Wachsen im Blatt entstanden.',
+      'Durch die Adern fließt Wasser ins Blatt, und Zucker fließt hinaus zum Baum. Zwischen den dicken Adern liegt ein feines Netz. Es hält das Blatt auch stabil. Bitte schaut nur an und legt das Blatt wieder hin.',
+    ],
+    o: [
+      'Die Adern eines Laubblattes bilden ein Leitungssystem: Die Mittelader trägt Seitenadern, zwischen ihnen verbinden feinere Adern alles zu einem Netz. Bei vielen Bäumen ist das Muster netzartig, bei Gräsern verlaufen die Adern dagegen eher parallel.',
+      'Die Adern werden angelegt, während das Blatt in der Knospe heranwächst und sich dann entfaltet. Wenn die grüne Blattfläche im Herbst abbaut, bleiben die Adern häufig noch länger sichtbar.',
+      'In den Adern liegen Leitungen für Wasser mit Nährsalzen (nach oben ins Blatt) und für den Zucker aus der Fotosynthese (hinaus zum Baum). Das dichte Netz sorgt dafür, dass jede Stelle des Blattes versorgt wird, auch wenn eine Ader beschädigt ist.',
+      'Wie sieht das Netz bei verschiedenen Blättern aus? Welches Muster erkennt ihr an den Seitenadern?',
+    ],
+  },
+  'hornbeam-fruit': {
+    m: [
+      'Das ist die Frucht einer Hainbuche. Ein kleines Nüsschen sitzt in einem Flügelblatt. Das Flügelblatt hat drei Zipfel, der mittlere ist am längsten.',
+      'Hainbuchen blühen im Frühling. Im Sommer und Herbst reifen die Früchte, später fallen sie ab. Das Flügelblatt dreht sich beim Fallen und der Wind kann die Frucht ein Stück tragen.',
+      'Das Flügelblatt ist wie ein kleines Segel. So landet die Frucht nicht direkt unter dem Mutterbaum, sondern etwas weiter weg. Dort hat ein junger Baum mehr Platz und Licht. Für manche Waldtiere ist das Nüsschen auch ein Futter. Bitte lasst es im Wald.',
+    ],
+    o: [
+      'Die Frucht der Hainbuche ist ein kleines gerilltes Nüsschen, das mit einem dreilappigen Hüllblatt verwachsen ist. Der mittlere Lappen ist deutlich länger als die seitlichen. Mit diesem Merkmal lässt sie sich gut von anderen Baumfrüchten unterscheiden.',
+      'Die Früchte hängen in Gruppen an den Zweigen und reifen im Spätsommer und Herbst. Sie lösen sich im Herbst, je nach Jahr und Wetter auch noch im Winter. Der Wind trägt sie dann ein Stück vom Baum weg.',
+      'Das Hüllblatt dient als Flugorgan: Es bremst den Fall und versetzt die Frucht in Drehung. Der Samen im Nüsschen kann so ein Stück vom Mutterbaum entfernt keimen. Viele Vögel und Nagetiere fressen die Nüsschen auch. Wie viele davon keimen, hängt von Wetter und Ort ab.',
+      'Warum ist ein Samen weiter weg vom Mutterbaum oft im Vorteil? Welche Nachteile könnte ein Flügel haben?',
+    ],
+  },
+  'linden-fruit': {
+    m: [
+      'Das ist ein kleiner Fruchtstand einer Linde. Mehrere kleine runde Nüsschen hängen an einem Stiel. Ein langes schmales Blatt ist mit dem Stiel verwachsen.',
+      'Linden blühen im Sommer mit gelblichen Blüten, die Bienen mögen. Danach wachsen die Nüsschen. Im Herbst oder Winter fällt der ganze Fruchtstand ab und dreht sich beim Fallen.',
+      'Das lange Blatt ist wie ein Flügel und hilft dem Wind, den Fruchtstand ein Stück weiterzutragen. So kommen die Samen nicht alle direkt unter dem Baum an. Bitte schaut nur an und lasst die Nüsschen im Wald.',
+    ],
+    o: [
+      'Der Fruchtstand der Linde besteht aus mehreren kleinen kugeligen Nüsschen an einem gemeinsamen Stiel. Das Flügelblatt, ein umgebildetes Hochblatt, ist bis etwa zur Hälfte mit dem Stiel verwachsen und fällt zusammen mit dem Fruchtstand ab.',
+      'Auf die Blüte im Frühsommer folgen die Nüsschen, die im Herbst reifen. Der Fruchtstand kann je nach Jahr und Witterung noch über den Winter am Baum hängen und fällt dann ab. Die Windverbreitung ist eine Anpassung der Linde.',
+      'Das Hochblatt wirkt als Flugorgan: Beim Fallen dreht es sich und bremst den Fall. So können Wind und Böen die Frucht über die Baumkrone hinaus tragen. Wie weit, hängt vom Wind ab und lässt sich nicht pauschal sagen.',
+      'Was verändert sich beim Fallen, wenn das Flügelblatt fehlt? Wie könntet ihr das mit einem Stück Papier ausprobieren?',
+    ],
+  },
+  'alder-cone': {
+    m: [
+      'Das sind kleine dunkle Zäpfchen an einem Zweig. Sie sehen aus wie winzige Zapfen, aber sie wachsen an einem Laubbaum, der Erle.',
+      'Im Frühling blüht die Erle mit Kätzchen. Daraus wachsen im Sommer die kleinen Fruchtzäpfchen. Im Herbst öffnen sie sich, und die Samen fallen heraus. Die leeren Zäpfchen bleiben oft bis in den Winter am Zweig.',
+      'Die Schuppen des Zäpfchens öffnen sich bei trockenem Wetter und schließen sich oft wieder, wenn es feucht wird. Erlen wachsen gern an Bächen und feuchten Stellen. Bitte schaut nur an und brecht nichts ab.',
+    ],
+    o: [
+      'Der Fruchtstand der Schwarzerle ist ein kleines, eiförmiges, verholztes Zäpfchen auf einem kurzen Stiel. Er entsteht aus einem weiblichen Kätzchen. Obwohl die Erle ein Laubbaum ist, sieht ihr Fruchtstand wie ein kleiner Zapfen aus.',
+      'Die weiblichen Blüten verholzen nach der Bestäubung zu Zäpfchen, die im Sommer grün sind und im Herbst braun werden und reifen. Nach dem Ausfallen der Samen bleiben viele Zäpfchen noch über den Winter hängen, manche bis ins nächste Frühjahr.',
+      'Die Schuppen öffnen sich bei trockener Witterung und geben die kleinen, leichten Samen frei, bei Feuchtigkeit schließen sie sich oft wieder. Die Samen werden vom Wind und teilweise vom Wasser verbreitet. Die Erle steht deshalb oft in Ufernähe, wo Wasser sie weitertragen kann.',
+      'Was unterscheidet die Zäpfchen der Erle von den Zapfen einer Fichte oder Kiefer? Woran erkennt man, dass der Baum trotzdem ein Laubbaum ist?',
+    ],
+  },
   'oak-leaf': {
     m: [
       'Ein Eichenblatt hat runde Lappen mit Buchten dazwischen, ungefähr wie eine Welle. Der Stiel ist kurz.',

@@ -1,4 +1,4 @@
-# Waldgeschenke (Katalogstand 4.0.0)
+# Waldgeschenke (Katalogstand 4.1.0)
 
 12 vollständig ausgearbeitete Geschenke mit eigener Fassung für 2–3, 4–6 und 7–10 Jahre. Pro vollständig erfüllter Mission wird genau eines vergeben, ungelesene werden bevorzugt, passende zu den Funden werden vorgezogen.
 Die Texte erzählen reale Naturzusammenhänge. Sie behaupten nie, ein Tier sei gesehen worden, und verlangen nie, etwas aufzuspüren, zu öffnen, zu sammeln oder zu essen.

@@ -12,6 +12,7 @@
     "icons": "node scripts/make-icons.mjs",
     "docs:generate": "node scripts/gen-docs.mjs",
     "images:forest": "node scripts/make-forest-background.mjs",
+    "images:family": "node scripts/make-family.mjs",
     "images:render": "node scripts/render-motifs.mjs render-out - docs/vergleich/vorher docs/vergleich"
   },
   "dependencies": {
