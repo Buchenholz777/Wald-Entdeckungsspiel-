@@ -2,7 +2,7 @@
 
 ## Hintergrund „Lichter Waldweg“ (eigene Illustration)
 
-Der Hintergrund ist eine **eigene Illustration** dieses Projekts, kein Foto und kein Fremdmaterial: ein lichtdurchfluteter Waldweg mit freundlichen Baumgruppen, einer kleinen Lichtung und wenigen Details am Rand (Farn, Gras, Blumen, kleine Pilze, bunte Blätter, eine Eichel). Er ist ein Stimmungsbild, keine Ansicht eines echten Waldes, ohne Figuren, Tiere, Gesichter und Schrift.
+Der Hintergrund ist eine **eigene Illustration** dieses Projekts, kein Foto und kein Fremdmaterial: ein lichtdurchfluteter Waldweg mit freundlichen Baumgruppen, einer kleinen Lichtung und wenigen Details am Rand (Farn, Gras, Blumen, kleine Pilze, bunte Blätter, eine Eichel). Er ist ein Stimmungsbild, keine Ansicht eines echten Waldes, mit einer kleinen suchenden Familie (siehe unten), ohne Tiere und Schrift.
 
 | Angabe | Wert |
 |---|---|
@@ -20,23 +20,21 @@ Der Hintergrund ist eine **eigene Illustration** dieses Projekts, kein Foto und 
 
 WebP wird bevorzugt, JPEG ist der Rückfall (`<picture>`). Die Dateien werden mit Hash-Namen gebaut und stehen im Offline-Cache. Es gibt keinen Fremdzugriff. Fällt das Bild aus, bleibt die ruhige Grundfläche `--forest-fallback`. Keine Animation, kein Parallax, kein Video.
 
-## Familien-Illustration im Hauptmenü (eigene Zeichnung)
+## Familie im Waldhintergrund (eigene Zeichnung)
 
-Im Kopfbereich des Hauptmenüs steht eine **eigens gezeichnete, fiktive Familie** auf einem sicheren, sonnigen Waldweg: ein schlanker Vater (braune Haare mit Undercut und längerem Deckhaar, voller gepflegter Bart, blaugrüne Augen, salbeigrüne Overshirt-Jacke), eine Mutter (lange braune Haare, braune Augen, terrakottafarbene Jacke über cremefarbenem Oberteil) und ein kleiner Junge von etwa zwei bis zweieinhalb Jahren (Kleinkindproportionen mit großem, rundem Kopf und kurzen Beinen, dunkelblonder Undercut, blaue Augen, ockergelbe Jacke, dunkelblaue Hose, grüne Stiefel). Sie zeigen gemeinsam auf ein Moospolster und einen Zapfen am Boden. Es sind nur diese drei Personen, kein Foto, keine KI-Gesichter nach realen Vorbildern, keine Schrift im Bild; die Zeichnung ist eine eigenständige Gestaltung und stellt keine reale Familie dar.
+In der **feststehenden Waldillustration** (siehe oben) sucht eine **eigens gezeichnete, fiktive Familie** gerade selbst im Wald: ein schlanker Vater (braune Haare mit Undercut und längerem Deckhaar, voller gepflegter Bart, blaugrüne Augen, salbeigrüne Overshirt-Jacke, ein Handy in der Hand), eine **schwangere** Mutter (lange braune Haare, braune Augen, terrakottafarbene Jacke über cremefarbenem Oberteil, das sich über den runden Bauch spannt, eine Hand auf dem Bauch) und ein kleiner Junge von etwa zwei bis zweieinhalb Jahren (Kleinkindproportionen mit großem, rundem Kopf und kurzen Beinen, dunkelblonder Undercut, blaue Augen, ockergelbe Jacke, dunkelblaue Hose). Alle drei schauen suchend nach unten, einer zeigt auf den Boden. Es sind nur diese drei Personen; kein Foto, keine Schrift, und die Zeichnung stellt keine reale Familie dar.
+
+Sie gehört **nicht** zur Bedienoberfläche, sondern ist Teil des Hintergrundbildes: klein, von Gras und Farn teilweise verdeckt, nicht vor den Inhalten. Man findet sie, wenn man genau hinsieht oder scrollt und die Karten den Blick darauf freigeben. Am Desktop steht sie rechts auf der Lichtung neben der Inhaltsspalte, auf dem Telefon mitten auf dem Weg. Während einer Suche, in Spiel und Hilfe, ist der Hintergrund stark zurückgenommen, die Familie also kaum zu sehen.
 
 | Angabe | Wert |
 |---|---|
-| Erzeugung | `scripts/make-family.mjs` zeichnet Figuren und Szene als SVG (reiner Code, deterministisch) und rendert sie mit `sharp` zu WebP und JPEG; die Quell-SVGs liegen daneben |
-| Aufruf | `npm run images:family` |
+| Erzeugung | `scripts/family-figures.mjs` (Figuren als SVG-Code) wird von `scripts/make-forest-background.mjs` in die Szene gesetzt; der Rest des Bildes ist unverändert (eigener Zufallsstrom) |
+| Aufruf | `npm run images:forest` |
 | Rechte | eigene Erstellung im Rahmen dieses Projekts, keine Fremdbilder, keine Lizenzpflichten |
-| Verwendung | nur im Hauptmenü, in `src/ui/FamilyHero.tsx`; im Spiel (auch während einer Suche) gibt es das Bild nicht, dort bleibt der ruhige Waldhintergrund unverändert |
-| Zuschnitte | `familie-breit-1000` (1000 × 560, Tablet und Desktop, Figuren in der Mitte, Wortmarke, Überschrift und Moduswahl bleiben frei) und `familie-schmal-720` (720 × 600, eigener Ausschnitt für Smartphones bis 600 px Breite, Gesichter in brauchbarer mittlerer Größe) |
-| Einbindung | `<picture>` mit WebP und JPEG-Rückfall, feste Maße (kein Layoutsprung), Waldgrün als Rückfallfläche, Hash-Namen im Offline-Cache (geprüft: alle vier Dateien im Service-Worker-Cache, Seite lädt bei gestopptem Server mit Familienbild) |
-| Bildbeschreibung | „Gezeichnete Familie auf einem sonnigen Waldweg: Vater, kleiner Sohn und Mutter zeigen gemeinsam auf ein Moospolster und einen Zapfen am Boden.“ |
-| Grenzen | Stilisierte Flachillustration; die Zeigehände haben eine natürliche Armlänge und berühren die Funde nicht. Wirkung der Gesichter nur am Bildschirmfenster beurteilt, nicht mit Familien. |
+| Dateien | dieselben wie der Hintergrund (`src/assets/forest/`), kein zusätzliches Bild, nichts Neues im Offline-Paket |
+| Grenzen | Stilisierte Flachillustration in kleiner Größe; Gesichter bewusst nur klein und teilweise verdeckt. Wirkung nur am Bildschirmfenster beurteilt, nicht mit Familien. |
 
 Das Altersfenster von Wald Escape (ab 4 Jahren) ändert das abgebildete Kleinkind nicht.
-
 ## Gegenstandsbilder
 
 Alle 30 Suchmotive (Eichel, Eichelhütchen, Buchecker, Hülle, Nussschale, Zapfen, Nadelzweig, Knospe, Blätter, Moos, Farn, Flechte, Pilze, Spuren …) sind **eigene naturgetreue Zeichnungen aus Code** (SVG mit Verläufen und Lichtfiltern), erstellt für dieses Projekt:

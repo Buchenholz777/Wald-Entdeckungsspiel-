@@ -2,6 +2,7 @@
 // Aufruf: npm run images:forest
 // Das Bild ist ein freundliches Stimmungsbild: warmes Licht, sanfte Tiefe, weiche Formen, keine Figuren, keine Schrift.
 import sharp from 'sharp';
+import { father, mother, boy } from './family-figures.mjs';
 import { mkdirSync, rmSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -168,6 +169,24 @@ function scene(w, h, variant) {
     svg += side(w * 0.82, -1, 0.5);
   }
 
+  // Eine kleine Familie sucht im Wald (Vater mit Handy, Mutter schwanger, Kleinkind). Sie ist Teil des feststehenden Hintergrunds, klein und
+  // von Gras und Farn teilweise verdeckt: Man entdeckt sie erst beim genauen Hinsehen oder beim Scrollen. Eigener Zufallsstrom, damit der Rest des Bildes unverändert bleibt.
+  {
+    const frnd = rng(31337);
+    const fam = wide ? { cx: w * 0.865, foot: h * 0.8, tall: h * 0.27, dx: 88 } : { cx: w * 0.5, foot: h * 0.76, tall: h * 0.2, dx: 62 };
+    const k = fam.tall / 410;
+    const place = (fn, x, kk, target, dy = 0) => `<g transform="translate(${f(x)} ${f(fam.foot + dy)}) scale(${f(kk)})">${fn(target)}</g>`;
+    svg += `<g>`;
+    for (const [x, rx] of [[fam.cx - fam.dx, 62], [fam.cx, 40], [fam.cx + fam.dx, 58]]) svg += `<ellipse cx="${f(x)}" cy="${f(fam.foot + 4)}" rx="${f(rx * k)}" ry="${f(10 * k)}" fill="#3a5a2a" opacity="0.28"/>`;
+    svg += place(father, fam.cx - fam.dx, k, [-96, -60]);
+    svg += place(mother, fam.cx + fam.dx, k * 0.94, [-78, -60]);
+    svg += place(boy, fam.cx, k * 1.02, [34, -30], 6);
+    // Gras und Farn vor den Füßen: Die Figuren stehen halb im Grün
+    for (let i = 0; i < (wide ? 9 : 7); i++) svg += tuft(fam.cx + (frnd() - 0.5) * fam.dx * 3.4, fam.foot + 10 + frnd() * 14, 22 + frnd() * 26, frnd, '#6fae52', '#8ac563');
+    svg += fern(fam.cx - fam.dx * 1.5, fam.foot + 16, 60 * (fam.tall / 270), -1, '#5fa34c', '#7dbb5c');
+    svg += fern(fam.cx + fam.dx * 1.6, fam.foot + 18, 54 * (fam.tall / 270), 1, '#5fa34c', '#7dbb5c');
+    svg += `</g>`;
+  }
   // Vordergrund: Gras, Farn, Blumen, Pilze, Blätter
   const fg = [];
   const nTufts = wide ? 26 : 12;

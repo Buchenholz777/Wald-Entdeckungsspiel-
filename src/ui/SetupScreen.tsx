@@ -9,11 +9,10 @@ import { Wordmark } from './Brand';
 import { EscapeDuration, EscapeIntro, EscapeResume, EscapeRules, EscapeSizePicker, escapeMinutesFor, escapeParams, escapeSizeFor } from './escape/EscapeSetup';
 import { ModeSwitch } from './ModeSwitch';
 import { isLive, progressOf, progressText } from '../domain/escape';
-import { FamilyHero } from './FamilyHero';
 import type { Escape } from './useEscape';
 import { GiftCard } from './GiftCard';
 import type { Game } from './useGame';
-import { IconArrow, IconChevron, IconHelp } from './icons';
+import { IconArrow, IconChevron, IconHelp, IconUndo } from './icons';
 import { Modal } from './Modal';
 import type { Route } from './useRoute';
 import { offlineLabel, type PwaInfo } from '../pwa/status';
@@ -38,6 +37,7 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
   const escMinutes = escapeMinutesFor(game, escSize);
   const liveEsc = isLive(esc.mission) ? esc.mission : null;
   const [confirmEsc, setConfirmEsc] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
   const [errors, setErrors] = useState<{ age?: string; empty?: string }>({});
   const [seasonOpen, setSeasonOpen] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
@@ -110,6 +110,17 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
   };
   const switchMode = (next: typeof mode) => game.saveSettings({ mode: next });
 
+  /** „Alles auf Anfang“: beendet alle angefangenen Spiele beider Spielmodi. Geschenkbuch und Einstellungen bleiben. */
+  const resetAll = () => {
+    game.discardRound();
+    esc.act.discard();
+    setConfirmReset(false);
+    setConfirmEsc(false);
+    setConfirmNew(false);
+    setErrors({});
+    game.setAnnounce('Alles auf Anfang. Alle angefangenen Spiele wurden abgebrochen.');
+  };
+
   const toggleContext = (tag: (typeof contextOptions)[number]) => {
     const has = draft.context.includes(tag);
     patchDraft({ context: has ? draft.context.filter((c) => c !== tag) : [...draft.context, tag] });
@@ -131,7 +142,6 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
             ))}
           </ul>
         </div>
-        <FamilyHero />
         <h1 className="h1" tabIndex={-1} data-focus-target>
           <span className="h1-line">Der Wald steckt voller Wunder.</span> <span className="h1-line">Entdeckt sie zusammen!</span>
         </h1>
@@ -369,7 +379,39 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
         <button type="button" className="link-btn" onClick={() => go('/hilfe')}>
           <IconHelp /> Hilfe &amp; Datenhinweis
         </button>
+        {(round || esc.mission) && (
+          <button type="button" className="link-btn" onClick={() => setConfirmReset(true)}>
+            <IconUndo /> Alles auf Anfang
+          </button>
+        )}
       </footer>
+
+      <Modal open={confirmReset} onClose={() => setConfirmReset(false)} title="Alles auf Anfang?" onHome={undefined}>
+        <p>
+          Alle angefangenen Spiele werden abgebrochen und zurückgestellt:
+        </p>
+        <ul className="reset-list">
+          {round && (
+            <li>
+              Waldschätze suchen: {running ? `die laufende Waldmission (${progress(running).done} von ${running.tasks.length} Stationen geschafft)` : 'die letzte, abgeschlossene Waldmission'}
+            </li>
+          )}
+          {esc.mission && (
+            <li>
+              Wald Escape: {liveEsc ? `die laufende Mission (${progressText(progressOf(liveEsc))})` : 'die letzte Mission mit ihrem Abschluss'}
+            </li>
+          )}
+        </ul>
+        <p className="muted">Eure gesammelten Waldgeheimnisse (Waldgeschenke) und eure Einstellungen bleiben erhalten. Das lässt sich nicht rückgängig machen.</p>
+        <div className="modal-actions">
+          <button type="button" className="btn btn-primary" onClick={() => setConfirmReset(false)}>
+            Nein, alles behalten
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={resetAll}>
+            Ja, alles auf Anfang
+          </button>
+        </div>
+      </Modal>
 
       {mode === 'treasure' && (
         <div className="action-bar">

@@ -186,6 +186,7 @@ export function useGame() {
 
   const discardRound = useCallback(() => {
     setRoundState(null);
+    setSwapUndo(null);
   }, []);
 
   /** „Hier nicht zu finden“. Gibt false zurück, wenn es keine passende Alternative gibt. */
