@@ -2,6 +2,7 @@ import { templatesById } from '../../catalog/templates';
 import { giftsById } from '../../catalog/gifts';
 import type { KeyValueStore } from '../storage';
 import type { ContextTag, Season } from '../types';
+import { createResetGuard } from '../resetGuard';
 import { settle } from './clock';
 import { ESCAPE_PHASES, KEY_COUNT, SYMBOLS, requiredTasks, toEscapeMinutes, type Completed, type EscapeMission, type PauseReason, type SymbolId, type TasksPerKey, type TimeOutcome } from './types';
 
@@ -140,9 +141,16 @@ export function sanitizeEscape(raw: unknown): EscapeMission | null {
   return out;
 }
 
-export type EscapeSaveResult = 'ok' | 'stale' | 'failed' | 'blocked';
+/** Zur Seite gelegte, nicht lesbare Kopie (wird beim Reset mit entfernt). */
+export const ESCAPE_UNREADABLE_KEY = `${ESCAPE_KEY}:unlesbar`;
+
+/** `reset`: In einem anderen Tab wurde zurückgesetzt; dieser Tab schreibt nichts, bis er den Reset übernommen hat. */
+export type EscapeSaveResult = 'ok' | 'stale' | 'failed' | 'blocked' | 'reset';
 
 export interface EscapePersistence {
+  /** Wurde in einem anderen Tab zurückgesetzt? */
+  resetPending(): boolean;
+  acknowledgeReset(): void;
   available: boolean;
   /** Lädt die Mission und rechnet die Uhr auf `now` ab (eine laufende Suche verliert die tatsächlich vergangene Zeit). */
   load(now: number): { status: EscapeLoadStatus; mission: EscapeMission | null };
@@ -172,7 +180,7 @@ export function createEscapePersistence(store: KeyValueStore | null): EscapePers
       // Ein nicht lesbarer Stand wird nicht stillschweigend gelöscht, sondern zur Seite gelegt (nur zur Sicherheit, nie als neue Funde übernommen).
       try {
         const text = store?.getItem(ESCAPE_KEY);
-        if (text) store?.setItem(`${ESCAPE_KEY}:unlesbar`, text);
+        if (text) store?.setItem(ESCAPE_UNREADABLE_KEY, text);
         store?.removeItem(ESCAPE_KEY);
       } catch {
         /* ignorieren */
@@ -180,12 +188,16 @@ export function createEscapePersistence(store: KeyValueStore | null): EscapePers
       return { status: 'corrupt', mission: null };
     }
   };
+  const guard = createResetGuard(store);
   return {
+    resetPending: () => guard.stale(),
+    acknowledgeReset: () => guard.acknowledge(),
     available: store !== null,
     load: read,
     peek: (now) => read(now).mission,
     save(m) {
       if (!store) return 'blocked';
+      if (guard.stale()) return 'reset';
       try {
         if (m === null) {
           store.removeItem(ESCAPE_KEY);

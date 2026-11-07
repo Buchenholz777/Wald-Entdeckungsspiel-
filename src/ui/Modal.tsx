@@ -46,6 +46,8 @@ export function Modal({ open, onClose, title, hideTitle, children, className, cl
         d.setAttribute('open', '');
       }
       openEntry();
+      // Anfänglicher Fokus: ein Element mit data-autofocus (zum Beispiel „Abbrechen“ bei einer gefährlichen Aktion), sonst der Browser-Standard
+      d.querySelector<HTMLElement>('[data-autofocus]')?.focus({ preventScroll: true });
     }
     if (!open && d.open) d.close();
   }, [open]);

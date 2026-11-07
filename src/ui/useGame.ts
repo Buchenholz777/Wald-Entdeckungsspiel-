@@ -36,7 +36,8 @@ function draftFromSettings(s: Settings): Draft {
 
 /** Zentraler Spielzustand: Runde, Einstellungen, Speicherung. Die Spiellogik selbst liegt in src/domain. */
 export function useGame() {
-  const persistence = useMemo(() => createPersistence(browserStore()), []);
+  const store = useMemo(() => browserStore(), []);
+  const persistence = useMemo(() => createPersistence(store), [store]);
   const initial = useMemo(() => {
     const r = persistence.loadRound();
     const s = persistence.loadSettings();
@@ -62,7 +63,26 @@ export function useGame() {
     return null;
   });
   const [announce, setAnnounce] = useState('');
+  /** Kurze Rückmeldung im Hauptmenü (zum Beispiel nach „Spiele und Einstellungen zurücksetzen“) */
+  const [flash, setFlash] = useState<string | null>(null);
   const first = useRef(true);
+
+  /**
+   * Übernimmt einen Reset in den Arbeitsspeicher: keine Runde, keine Tausch-Korrektur, Einstellungen und Auswahl wie beim Erstbesuch
+   * (Sammlung der Waldgeschenke bleibt). Der Speicher ist dann schon zurückgesetzt (eigener Reset) oder wird hier neu gelesen (anderer Tab).
+   */
+  const applyReset = useCallback(
+    (next?: Settings) => {
+      persistence.acknowledgeReset();
+      const s = next ?? persistence.loadSettings().settings;
+      setRoundState(null);
+      setSwapUndo(null);
+      setSettings(s);
+      setDraft(draftFromSettings(s));
+      setNotice(null);
+    },
+    [persistence],
+  );
 
   // Runde sichern, sobald sie sich ändert
   useEffect(() => {
@@ -70,14 +90,43 @@ export function useGame() {
       first.current = false;
       return;
     }
+    // In einem anderen Tab wurde zurückgesetzt: Diesen Stand nicht zurückschreiben, sondern den Reset übernehmen.
+    if (persistence.resetPending()) {
+      applyReset();
+      setFlash('Die Spiele wurden in einem anderen Fenster zurückgesetzt.');
+      return;
+    }
     const ok = persistence.saveRound(round);
     if (!ok && persistence.available) {
       setNotice((n) => n ?? { kind: 'write-failed', text: 'Das Speichern hat nicht geklappt. Die Mission bleibt offen, solange diese Seite geöffnet ist.' });
     }
-  }, [round, persistence]);
+  }, [round, persistence, applyReset]);
+
+  // Reset in einem anderen Tab (Speicherereignis) oder verpasst (Rückkehr zum Tab): übernehmen, bevor etwas Gelöschtes zurückkommt.
+  useEffect(() => {
+    const check = () => {
+      if (persistence.resetPending()) {
+        applyReset();
+        setFlash('Die Spiele wurden in einem anderen Fenster zurückgesetzt.');
+      }
+    };
+    window.addEventListener('storage', check);
+    window.addEventListener('focus', check);
+    document.addEventListener('visibilitychange', check);
+    return () => {
+      window.removeEventListener('storage', check);
+      window.removeEventListener('focus', check);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, [persistence, applyReset]);
 
   const saveSettings = useCallback(
     (patch: Partial<Settings>) => {
+      if (persistence.resetPending()) {
+        // Ein älterer Tab ändert eine Einstellung nach einem Reset anderswo: erst den Reset übernehmen, dann die Änderung auf dem frischen Stand.
+        applyReset();
+        setFlash('Die Spiele wurden in einem anderen Fenster zurückgesetzt.');
+      }
       setSettings((s) => {
         // Der gespeicherte Stand ist die Grundlage: Ein zweiter, älterer Tab überschreibt so nie Einstellungen
         // (Spielmodus, Geschenkbuch, Suchzeit) aus dem jüngeren Tab. Nur die geänderten Felder kommen dazu.
@@ -88,7 +137,7 @@ export function useGame() {
         return next;
       });
     },
-    [persistence],
+    [persistence, applyReset],
   );
 
   // Ein Zustandsübergang, der die Mission vollständig macht, vergibt im selben Schritt genau ein Waldgeschenk.
@@ -215,6 +264,10 @@ export function useGame() {
 
   return {
     round,
+    store,
+    applyReset,
+    flash,
+    setFlash,
     swapUndo,
     undoSwap,
     setRound,

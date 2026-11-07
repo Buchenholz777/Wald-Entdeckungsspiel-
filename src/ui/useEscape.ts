@@ -62,6 +62,17 @@ export function useEscape(settings: Settings, saveSettings: (patch: Partial<Sett
     setMissionState(m);
   }, []);
 
+  /**
+   * „Spiele und Einstellungen zurücksetzen“ übernehmen (eigener oder anderer Tab): keine Mission mehr, damit kein Timer, keine Pause,
+   * kein offenes Symbolrätsel und keine ausstehende Abschlussfeier. Der Anzeige-Takt endet von selbst, sobald keine Suche läuft.
+   */
+  const applyReset = useCallback(() => {
+    persistence.acknowledgeReset();
+    adopt(null);
+    setNotice(null);
+    setAnnounce('');
+  }, [persistence, adopt]);
+
   /** Wendet eine Spiellogik-Funktion auf den aktuellen Stand an, nummeriert neu und speichert sofort. */
   const commit = useCallback(
     (fn: (m: EscapeMission, t: number) => EscapeMission | null): boolean => {
@@ -75,6 +86,11 @@ export function useEscape(settings: Settings, saveSettings: (patch: Partial<Sett
       }
       const stamped: EscapeMission = { ...next, rev: prev.rev + 1, updatedAt: t };
       const res = persistence.save(stamped);
+      if (res === 'reset') {
+        // Anderswo wurde zurückgesetzt: nichts zurückschreiben, den Reset übernehmen.
+        applyReset();
+        return false;
+      }
       if (res === 'stale') {
         // Ein anderer Tab hat einen jüngeren Stand gespeichert: Er gilt, dieser Tab überschreibt nichts.
         adopt(persistence.peek(Date.now()));
@@ -86,8 +102,23 @@ export function useEscape(settings: Settings, saveSettings: (patch: Partial<Sett
       setNow(t);
       return true;
     },
-    [persistence, adopt],
+    [persistence, adopt, applyReset],
   );
+
+  // Reset in einem anderen Tab: Speicherereignis, Rückkehr zum Tab oder Sichtbarwerden der Seite.
+  useEffect(() => {
+    const check = () => {
+      if (persistence.resetPending()) applyReset();
+    };
+    window.addEventListener('storage', check);
+    window.addEventListener('focus', check);
+    document.addEventListener('visibilitychange', check);
+    return () => {
+      window.removeEventListener('storage', check);
+      window.removeEventListener('focus', check);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, [persistence, applyReset]);
 
   // Anzeige-Takt: nur solange die Suche läuft. Fällige Zeitabläufe werden im Zustand festgehalten.
   const running = mission !== null && isRunning(mission);
@@ -133,6 +164,7 @@ export function useEscape(settings: Settings, saveSettings: (patch: Partial<Sett
 
   const start = useCallback(
     (p: EscapeParams): StartEscapeResult => {
+      if (persistence.resetPending()) applyReset();
       const t = Date.now();
       const res = createEscape(p, freshSeed(), t);
       if (!res.ok) return { ok: false, reason: 'few', groups: res.groups };
@@ -145,7 +177,7 @@ export function useEscape(settings: Settings, saveSettings: (patch: Partial<Sett
       setAnnounce(`Die Sanduhr läuft. Findet ${p.tasksPerKey * 3} Waldaufgaben.`);
       return { ok: true };
     },
-    [persistence, adopt, saveSettings],
+    [persistence, adopt, saveSettings, applyReset],
   );
 
   const act = useMemo(
@@ -223,7 +255,7 @@ export function useEscape(settings: Settings, saveSettings: (patch: Partial<Sett
   );
 
   const remainingMs = mission ? remainingAt(mission, now) : 0;
-  return { mission, now, remainingMs, running, announce, setAnnounce, notice, act, start, persistenceAvailable: persistence.available, celebrate: mission ? needsCelebration(mission) : false };
+  return { mission, now, remainingMs, running, announce, setAnnounce, notice, act, start, applyReset, persistenceAvailable: persistence.available, celebrate: mission ? needsCelebration(mission) : false };
 }
 
 export type Escape = ReturnType<typeof useEscape>;

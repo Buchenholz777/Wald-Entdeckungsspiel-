@@ -10,6 +10,7 @@ import { RoundScreen } from './RoundScreen';
 import { EscapeScreen } from './escape/EscapeScreen';
 import { SetupScreen } from './SetupScreen';
 import { isLive } from '../domain/escape';
+import { performReset, type ResetOutcome } from '../domain/reset';
 import { SummaryScreen } from './SummaryScreen';
 import { useEscape } from './useEscape';
 import { useGame } from './useGame';
@@ -58,6 +59,12 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Eine Spiel-Adresse ohne dazugehörigen Spielstand (zum Beispiel nach „Spiele und Einstellungen zurücksetzen“, auch aus einem anderen Tab)
+  // führt immer zurück ins Hauptmenü: Die Adresse zeigt nie ein Spiel, das es nicht mehr gibt.
+  useEffect(() => {
+    if (((route === '/runde' || route === '/abschluss') && !round) || (route === '/escape' && !esc.mission)) go('/', true);
+  }, [route, round, esc.mission, go]);
+
   // Bewegung und Sichtbarkeit als Merkmale am Dokument (CSS pausiert/entfernt Animationen)
   useEffect(() => {
     document.documentElement.dataset.motion = game.settings.motionOff ? 'off' : 'on';
@@ -89,9 +96,28 @@ export function App() {
     else escAct.leave();
   }, [route, escId, escAct]);
 
+  /**
+   * Zentrale Reset-Aktion: Speicher gezielt zurücksetzen und prüfen (performReset), erst dann Arbeitsspeicher beider Spielmodi leeren.
+   * Die Erfolgsmeldung steht erst nach geprüftem Speicherstand. Fehler lassen den Zustand unverändert und werden dem Dialog gemeldet.
+   */
+  const resetAll = (): ResetOutcome => {
+    const out = performReset(game.store);
+    if (out.ok) {
+      game.applyReset(out.settings);
+      esc.applyReset();
+      game.setFlash(
+        out.persisted
+          ? 'Spiele und Einstellungen wurden zurückgesetzt.'
+          : 'Spiele und Einstellungen wurden zurückgesetzt. Dieses Gerät speichert nichts: Das gilt nur, solange diese Seite offen ist.',
+      );
+      game.setAnnounce('Spiele und Einstellungen wurden zurückgesetzt.');
+    }
+    return out;
+  };
+
   const hasRound = round !== null;
   let screen;
-  if (route === '/hilfe') screen = <HelpScreen game={game} go={go} pwa={pwa} back={() => (window.history.length > 1 ? window.history.back() : go('/'))} />;
+  if (route === '/hilfe') screen = <HelpScreen game={game} go={go} pwa={pwa} reset={resetAll} back={() => (window.history.length > 1 ? window.history.back() : go('/'))} />;
   else if (route === '/intern/bilder') screen = <Gallery back={() => go('/')} />;
   else if (route === '/runde' && hasRound) screen = <RoundScreen game={game} go={go} />;
   else if (route === '/abschluss' && hasRound) screen = <SummaryScreen game={game} go={go} />;

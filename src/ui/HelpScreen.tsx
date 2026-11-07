@@ -1,5 +1,8 @@
+import { useRef, useState } from 'react';
+import type { ResetOutcome } from '../domain/reset';
 import { offlineLabel, type PwaInfo } from '../pwa/status';
 import { IconBack } from './icons';
+import { Modal } from './Modal';
 import type { Game } from './useGame';
 import type { Route } from './useRoute';
 
@@ -8,9 +11,72 @@ interface Props {
   go: (r: Route) => void;
   pwa: PwaInfo;
   back: () => void;
+  /** Zentrale Reset-Aktion (in der App): löscht laufende Spiele, setzt Einstellungen zurück, meldet den tatsächlichen Stand */
+  reset: () => ResetOutcome;
 }
 
-export function HelpScreen({ game, pwa, back }: Props) {
+/**
+ * „Spiele und Einstellungen zurücksetzen“: eigener, vom Spielstart getrennter Bereich im Datenbereich der Hilfe.
+ * Der Dialog beginnt mit dem Fokus auf „Abbrechen“, schließt mit Escape und führt den Reset erst nach „Jetzt zurücksetzen“ aus,
+ * auch bei schnellem Mehrfachtippen nur einmal.
+ */
+function ResetSection({ reset, go }: { reset: () => ResetOutcome; go: (r: Route) => void }) {
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const busy = useRef(false);
+  const [working, setWorking] = useState(false);
+
+  const close = () => {
+    setOpen(false);
+    setError(null);
+  };
+  const confirm = () => {
+    if (busy.current) return; // doppeltes Antippen
+    busy.current = true;
+    setWorking(true);
+    const out = reset();
+    if (!out.ok) {
+      busy.current = false;
+      setWorking(false);
+      setError(
+        `Das Zurücksetzen konnte nicht sicher gespeichert werden (${out.detail}). Der Stand in diesem Browser ist möglicherweise nur teilweise zurückgesetzt. Bitte ladet die Seite neu und prüft, was noch da ist.`,
+      );
+      return;
+    }
+    setOpen(false);
+    busy.current = false;
+    setWorking(false);
+    go('/');
+  };
+
+  return (
+    <section className="help-card reset-card" aria-labelledby="reset-title">
+      <h2 id="reset-title">Zurücksetzen</h2>
+      <p className="muted">Beendet alle angefangenen Spiele auf diesem Gerät und stellt die Einstellungen auf den Anfang zurück.</p>
+      <button type="button" className="btn btn-secondary reset-btn" onClick={() => setOpen(true)}>
+        Spiele und Einstellungen zurücksetzen
+      </button>
+      <Modal open={open} onClose={close} title="Spiele und Einstellungen zurücksetzen?" onHome={undefined}>
+        <p>Alle laufenden und pausierten Spiele auf diesem Gerät werden gelöscht. Deine Spieleinstellungen werden auf die Standardwerte zurückgesetzt. Gesammelte Waldgeschenke bleiben in deiner Sammlung.</p>
+        {error && (
+          <p className="notice-inline" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-primary" onClick={close} data-autofocus>
+            Abbrechen
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={confirm} disabled={working} aria-disabled={working}>
+            Jetzt zurücksetzen
+          </button>
+        </div>
+      </Modal>
+    </section>
+  );
+}
+
+export function HelpScreen({ game, pwa, back, go, reset }: Props) {
   const off = offlineLabel(pwa.offline);
   const motionOff = game.settings.motionOff;
 
@@ -113,6 +179,8 @@ export function HelpScreen({ game, pwa, back }: Props) {
         </p>
         <p className="muted">Wenn euer Browser das Speichern blockiert, bleibt die Mission nur so lange offen, wie diese Seite geöffnet ist.</p>
       </section>
+
+      <ResetSection reset={reset} go={go} />
 
       <section className="help-card">
         <h2>Zu den Inhalten</h2>

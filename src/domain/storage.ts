@@ -1,4 +1,5 @@
 import { giftsById } from '../catalog/gifts';
+import { createResetGuard } from './resetGuard';
 import { templates } from '../catalog/templates';
 import { FOREST, GAME_MODES, THEMES, type AgeGroup, type ContextTag, type Environment, type GameMode, type Round, type Settings, type Theme } from './types';
 
@@ -135,6 +136,10 @@ export function sanitizeRound(raw: unknown): Round | null {
 }
 
 export interface Persistence {
+  /** Wurde in einem anderen Tab zurückgesetzt? Solange das nicht übernommen ist, wird nichts mehr geschrieben. */
+  resetPending(): boolean;
+  /** Den Reset (eigenen oder aus einem anderen Tab) übernehmen: Schreiben ist wieder erlaubt. */
+  acknowledgeReset(): void;
   /** `archived`: Die gespeicherte Runde gehörte zu einem früheren Ort. Sie wurde ins Archiv verschoben (nicht gelöscht). */
   loadRound(): { status: LoadStatus; round: Round | null };
   loadArchive(): Round | null;
@@ -145,7 +150,10 @@ export interface Persistence {
 }
 
 export function createPersistence(store: KeyValueStore | null): Persistence {
+  const guard = createResetGuard(store);
   return {
+    resetPending: () => guard.stale(),
+    acknowledgeReset: () => guard.acknowledge(),
     available: store !== null,
     loadRound() {
       if (!store) return { status: 'blocked', round: null };
@@ -186,6 +194,8 @@ export function createPersistence(store: KeyValueStore | null): Persistence {
     },
     saveRound(round) {
       if (!store) return false;
+      // Ein anderer Tab hat zurückgesetzt: Dieser Tab bringt keinen gelöschten Spielstand zurück.
+      if (guard.stale()) return false;
       try {
         if (round === null) store.removeItem(ROUND_KEY);
         else store.setItem(ROUND_KEY, JSON.stringify({ v: STORAGE_VERSION, savedAt: Date.now(), round }));
@@ -208,6 +218,7 @@ export function createPersistence(store: KeyValueStore | null): Persistence {
     },
     saveSettings(settings) {
       if (!store) return false;
+      if (guard.stale()) return false;
       try {
         store.setItem(SETTINGS_KEY, JSON.stringify({ v: STORAGE_VERSION, settings }));
         return true;
