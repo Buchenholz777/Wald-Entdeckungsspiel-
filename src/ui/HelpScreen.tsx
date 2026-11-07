@@ -109,7 +109,7 @@ export function HelpScreen({ game, pwa, back }: Props) {
       <section className="help-card">
         <h2>Datenhinweis</h2>
         <p>
-          Eure laufende Waldmission und eure letzten Einstellungen werden nur auf diesem Gerät im Browser gespeichert. Es gibt kein Konto, keinen Standort, keine Fotos, keine Werbung und kein Tracking. Es werden keine Daten an Dritte gesendet.
+          Eure laufende Waldmission und eure letzten Einstellungen werden nur auf diesem Gerät im Browser gespeichert. Es gibt kein Konto, keinen Standort, keine Fotos und keine Werbung. Spielstände und Funde verlassen das Gerät nicht. Für die Reichweitenmessung wird beim Aufruf der Seite Google Analytics geladen: Dabei werden Daten über den Seitenbesuch (zum Beispiel ungefährer Ort, Gerät und Browser) an Google übertragen.
         </p>
         <p className="muted">Wenn euer Browser das Speichern blockiert, bleibt die Mission nur so lange offen, wie diese Seite geöffnet ist.</p>
       </section>
