@@ -13,20 +13,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#2c4a38" />
-    <meta name="description" content="Wald-Spiel: Draußen spielen. Gemeinsam staunen. Kleine Suchspiele für Waldspaziergänge mit Kindern von 2 bis 10 Jahren." />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="de_DE" />
-    <meta property="og:site_name" content="Wald-Spiel" />
-    <meta property="og:title" content="Wald-Spiel – Draußen spielen. Gemeinsam staunen." />
-    <meta property="og:description" content="Der Wald steckt voller Wunder. Entdeckt sie zusammen: kleine Suchspiele für Waldspaziergänge mit Kindern von 2 bis 10 Jahren." />
+    <!-- Titel, Beschreibung, Canonical, Open Graph und JSON-LD setzt der Build aus src/seo/site.ts (genau einmal je Dokument) -->
+<!--SEO_HEAD-->
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-    <title>Wald-Spiel – Draußen spielen. Gemeinsam staunen.</title>
   </head>
   <body>
-    <div id="root"></div>
-    <noscript>Wald-Spiel braucht JavaScript, um zu funktionieren. Bitte aktiviert es in eurem Browser.</noscript>
+    <!-- Statischer Inhalt der Startseite für Besucher und Suchmaschinen ohne JavaScript; die App ersetzt ihn beim Start durch die Spielauswahl -->
+    <div id="root"><!--SEO_ROOT--></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

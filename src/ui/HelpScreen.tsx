@@ -93,6 +93,9 @@ export function HelpScreen({ game, pwa, back, go, reset }: Props) {
 
       <section className="help-card">
         <h2>So geht’s</h2>
+        <p className="muted">
+          Ausführlicher mit häufigen Fragen: <a href="/anleitung/">Anleitung zu Wald-Spiel</a>.
+        </p>
         <ol className="steps">
           <li>Wählt das Alter des jüngsten Kindes. Die Jahreszeit schlagen wir euch nach dem Datum vor, ihr könnt sie ändern.</li>
           <li>Tippt auf „Waldmission starten“. Ihr bekommt ein paar Stationen mit kleinen Waldgeheimnissen.</li>

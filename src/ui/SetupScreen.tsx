@@ -9,6 +9,7 @@ import { Wordmark } from './Brand';
 import { EscapeDuration, EscapeIntro, EscapeResume, EscapeRules, EscapeSizePicker, escapeMinutesFor, escapeParams, escapeSizeFor } from './escape/EscapeSetup';
 import { ModeSwitch } from './ModeSwitch';
 import { isLive, progressOf, progressText } from '../domain/escape';
+import { HOME_LEAD, PARENT_INFO, START_LINKS, pageById } from '../seo/site';
 import type { Escape } from './useEscape';
 import { GiftCard } from './GiftCard';
 import type { Game } from './useGame';
@@ -130,11 +131,9 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
           </ul>
         </div>
         <h1 className="h1" tabIndex={-1} data-focus-target>
-          <span className="h1-line">Der Wald steckt voller Wunder.</span> <span className="h1-line">Entdeckt sie zusammen!</span>
+          {pageById('start').h1}
         </h1>
-        <p className="lead">
-          Zapfen, Waldfrüchte und kleine Spuren: Geht gemeinsam auf Entdeckermission und erfahrt, welche Geheimnisse im Wald stecken. Wählt das Alter eures Kindes – und los geht’s!
-        </p>
+        <p className="lead">{HOME_LEAD}</p>
       </header>
 
       <ModeSwitch mode={mode} onChange={switchMode} />
@@ -366,6 +365,21 @@ export function SetupScreen({ game, esc, go, pwa, legacyLink }: Props) {
           </button>
         </section>
       )}
+
+      {/* Elternbereich mit echten Links auf die Einstiegsseiten (dieselben Texte wie im statischen HTML der Startseite) */}
+      <section className="help-card parent-info" aria-labelledby="parent-info-title">
+        <h2 id="parent-info-title">{PARENT_INFO.heading}</h2>
+        {PARENT_INFO.paragraphs.map((t) => (
+          <p key={t}>{t}</p>
+        ))}
+        <ul className="seo-links">
+          {START_LINKS.map((l) => (
+            <li key={l.path}>
+              <a href={l.path}>{l.label}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <footer className="setup-foot">
         <p className={`offline-line tone-${off.tone}`}>

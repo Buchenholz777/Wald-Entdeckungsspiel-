@@ -31,6 +31,13 @@ export function App() {
   useEffect(() => {
     const raw = window.location.hash.replace(/^#/, '');
     const known = ['/', '/runde', '/abschluss', '/hilfe', '/intern/bilder', '/escape'];
+    if (raw === '/modus/waldschaetze' || raw === '/modus/escape') {
+      // Einstieg von den öffentlichen Seiten: nur den Modus wählen und das Hauptmenü zeigen. Es startet nichts und ersetzt keinen Spielstand;
+      // bei einer laufenden Runde dieses Modus steht dort „Weiterspielen“ als Hauptaktion.
+      game.saveSettings({ mode: raw === '/modus/escape' ? 'escape' : 'treasure' });
+      go('/', true);
+      return;
+    }
     if (!raw) {
       // Kaltstart ohne Adresszusatz: Eine laufende oder abgelaufene Wald-Escape-Suche hat Vorrang (sie ist zeitkritisch),
       // sonst wird die laufende Waldschätze-Runde wieder aufgenommen. Ein ausdrücklich gewähltes Hauptmenü (#/) bleibt stehen.

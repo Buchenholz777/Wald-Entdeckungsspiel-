@@ -40,9 +40,22 @@ self.addEventListener('fetch', (event) => {
     (async () => {
       const cache = await caches.open(CACHE);
       if (req.mode === 'navigate') {
+        // Eine vorgeladene Inhaltsseite (zum Beispiel /waldschatzsuche/) wird unter ihrer eigenen Adresse beantwortet, nie mit der App-Hülle.
+        const page = await cache.match(req, { ignoreSearch: true, ignoreVary: true });
+        if (page) return page;
+        // Nur die Startadresse bekommt die App-Hülle (Hash-Routen teilen sich dieses Dokument). Alles andere geht ins Netz,
+        // damit das Hosting unbekannte Adressen mit seiner echten 404-Antwort beantwortet; ohne Netz bleibt dann die Hülle als Notlösung.
+        const path = url.pathname.replace(/index\.html$/, '');
+        const isStart = path === new URL(self.registration.scope).pathname;
         const shell = await cache.match(abs('./'), { ignoreVary: true });
-        if (shell) return shell;
-        return fetch(req);
+        if (isStart && shell) return shell;
+        try {
+          return await fetch(req);
+        } catch (e) {
+          // Ohne Netz und ohne vorgeladene Seite: zurück zur Startadresse (die Hülle unter einer fremden Adresse fände ihre Dateien nicht).
+          if (shell) return Response.redirect(abs('./'), 302);
+          throw e;
+        }
       }
       // ignoreVary: Der Server sendet Vary: Origin; der Vorlade-Eintrag soll trotzdem für jede Anfrage passen.
       const hit = await cache.match(req, { ignoreSearch: true, ignoreVary: true });

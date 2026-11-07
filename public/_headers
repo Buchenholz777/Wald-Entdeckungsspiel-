@@ -1,0 +1,7 @@
+# Cloudflare Pages: Kopfzeilen. Gehashte Dateien in /assets/ ändern nie ihren Inhalt und dürfen lange gecacht werden.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/seo/*
+  Cache-Control: public, max-age=86400
+/og/*
+  Cache-Control: public, max-age=86400
